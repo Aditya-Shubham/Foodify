@@ -30,20 +30,20 @@ const Cart = ({ cart, removeFromCart }) => {
         <div className="cart-card"> {/* Single card for all items */}
           <h3>Selected Items</h3>
           {itemsArray.map((item) => (
-            <div key={item.id} className="cart-item">
-              <p>
-                <strong>{item.name}</strong> ({item.type === "veg" ? "🟢 Veg" : "🔴 Non-Veg"})
-              </p>
-              <p>Price: ₹{item.price} × {item.quantity} = ₹{item.totalPrice}</p>
-              <button
-                className="remove-btn"
-                onClick={() => removeFromCart(item.id)}
-              >
-                Remove
-              </button>
-              <hr />
-            </div>
-          ))}
+  <div key={item.id} className="cart-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+    <div style={{ flex: 2 }}>
+      <strong>{item.name}</strong> ({item.type === "veg" ? "🟢 Veg" : "🔴 Non-Veg"})
+    </div>
+    <div style={{ flex: 1, textAlign: 'center' }}>
+      ₹{item.price} × {item.quantity} = ₹{item.totalPrice}
+    </div>
+    <div style={{ flex: 0 }}>
+      <button className="remove-btn" onClick={() => removeFromCart(item.id)}>Remove</button>
+    </div>
+  </div>
+))}
+
+        
 
           <div className="cart-total">
             <h3>Total: ₹{total}</h3>
