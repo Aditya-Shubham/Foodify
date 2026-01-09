@@ -113,17 +113,7 @@ const RestaurantOwnerSetup = () => {
             </div>
           </div>
 
-          {/* Restaurant Image */}
-          <h2>Upload Image</h2>
-          <div className="form-group">
-            <label>Restaurant Image</label>
-            <input
-              type="file"
-              name="image"
-              onChange={handleChange}
-              accept="image/*"
-            />
-          </div>
+         
 
           {/* Menu Items */}
           <h2>Menu Items</h2>

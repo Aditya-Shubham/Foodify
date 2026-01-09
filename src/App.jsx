@@ -29,7 +29,7 @@ function Layout({ cart, addToCart, removeFromCart }) {
         <Route path="/" element={<Signup />} />
         <Route path="/home" element={<Home addToCart={addToCart} />} />
         <Route path="/orders" element={<Orders addToCart={addToCart} />} />
-        <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} />} />
+        <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} addToCart={addToCart} />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
 
