@@ -1,7 +1,13 @@
-
 import React from "react";
 
 const Cart = ({ cart, removeFromCart, addToCart }) => {
+  const [paymentMethod, setPaymentMethod] = React.useState("cod");
+  const [upiId, setUpiId] = React.useState("");
+  const [orderPlaced, setOrderPlaced] = React.useState(false);
+
+  // 🔥 NEW STATES
+  const [upiVerified, setUpiVerified] = React.useState(false);
+  const [verifying, setVerifying] = React.useState(false);
 
   /* ===============================
      GROUP ITEMS BY ID
@@ -35,10 +41,8 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
   let discount = 0;
 
   if (isFirstOrder) {
-    // 🔥 Flat 40% OFF on first order
     discount = Math.floor(subtotal * 0.4);
   } else {
-    // 🔁 Slab-based discounts (existing logic)
     if (subtotal >= 800 && totalQty >= 8) discount = 250;
     else if (subtotal >= 500 && totalQty >= 5) discount = 150;
     else if (subtotal >= 300 && totalQty >= 3) discount = 100;
@@ -51,8 +55,21 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
      PLACE ORDER HANDLER
   =============================== */
   const placeOrder = () => {
+    if (paymentMethod === "upi" && !upiVerified) {
+      alert("⚠️ Please verify your UPI ID first");
+      return;
+    }
+
     localStorage.setItem("hasOrderedBefore", "true");
-    alert("🎉 Order placed successfully!");
+
+    alert(
+      paymentMethod === "cod"
+        ? "🎉 Order placed successfully!"
+        : "🎉 Order placed successfully!"
+
+    );
+
+    setOrderPlaced(true);
   };
 
   return (
@@ -93,7 +110,6 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
               </div>
 
               <div style={{ flex: 1 }}>
-                {/* ➖ ➕ Quantity Control */}
                 <div className="qty-control">
                   <button onClick={() => removeFromCart(item.id)}>-</button>
                   <span>{item.quantity}</span>
@@ -119,6 +135,70 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
           ))}
 
           {/* ===============================
+             PAYMENT METHOD
+          =============================== */}
+          <div className="payment-box">
+            <h3>Payment Method</h3>
+
+            <label className="payment-option">
+              <input
+                type="radio"
+                name="payment"
+                value="cod"
+                checked={paymentMethod === "cod"}
+                onChange={() => setPaymentMethod("cod")}
+              />
+              Cash on Delivery
+            </label>
+
+            <label className="payment-option">
+              <input
+                type="radio"
+                name="payment"
+                value="upi"
+                checked={paymentMethod === "upi"}
+                onChange={() => setPaymentMethod("upi")}
+              />
+              UPI
+            </label>
+
+            {/* 🔥 UPI INPUT + VERIFY */}
+            {paymentMethod === "upi" && (
+              <div className="upi-box">
+                <input
+                  type="text"
+                  className="upi-input"
+                  placeholder="Enter UPI ID (eg: name@upi)"
+                  value={upiId}
+                  onChange={(e) => {
+                    setUpiId(e.target.value);
+                    setUpiVerified(false);
+                  }}
+                />
+
+                <button
+                  className="verify-upi-btn"
+                  disabled={upiId.trim() === "" || verifying}
+                  onClick={() => {
+                    setVerifying(true);
+                    setTimeout(() => {
+                      setUpiVerified(true);
+                      setVerifying(false);
+                      alert("✅ UPI ID verified successfully");
+                    }, 1000);
+                  }}
+                >
+                  {verifying
+                    ? "Verifying..."
+                    : upiVerified
+                    ? "Verified "
+                    : "Verify "}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* ===============================
              BILL SUMMARY
           =============================== */}
           <div className="cart-total">
@@ -128,8 +208,15 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
             <h3>Total: ₹{total}</h3>
 
             <div className="place-order-wrapper">
-              <button className="place-order-btn" onClick={placeOrder}>
-                PLACE ORDER
+              <button
+                className="place-order-btn"
+                onClick={placeOrder}
+                disabled={
+                  orderPlaced ||
+                  (paymentMethod === "upi" && !upiVerified)
+                }
+              >
+                {orderPlaced ? "ORDER PLACED " : "PLACE ORDER"}
               </button>
             </div>
           </div>

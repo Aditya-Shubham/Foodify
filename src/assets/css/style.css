@@ -1256,9 +1256,68 @@ body {
  
 .place-order-btn:hover {
    background: #ff4400;
-  
-
 }
+
+.payment-box {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.upi-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.place-order-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.upi-box {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.upi-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.verify-upi-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #ff9800;
+  color: #fff;
+  cursor: pointer;
+}
+
+.verify-upi-btn:hover {
+  background-color: #ff4400;
+}
+
+
+.verify-upi-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
 
 
 
