@@ -9,7 +9,7 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
-    role: "user" // default role
+    role: "user"
   });
 
   const handleChange = (e) => {
@@ -19,20 +19,36 @@ const Signup = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Signup data:", formData);
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
 
-    // TEMP UI-ONLY REDIRECT LOGIC
-    if (formData.role === "admin") {
-      navigate("/admin");
-    } else if (formData.role === "owner") {
-      navigate("/ResturantOwnerSetup"); // later: /owner/setup
-    } else if (formData.role === "delivery") {
-      navigate("/DeliveryPartnerSetup"); // later: /delivery/setup
-    } else {
-      navigate("/home"); 
+      const data = await res.json();
+
+      // ❌ Backend error (duplicate email, validation, etc.)
+      if (!res.ok) {
+        alert(data.message || "Signup failed");
+        return;
+      }
+
+      // ✅ Success
+      alert(data.message);
+
+      // Redirect based on role
+      if (formData.role === "admin") navigate("/admin");
+      else if (formData.role === "owner") navigate("/ResturantOwnerSetup");
+      else if (formData.role === "delivery") navigate("/DeliveryPartnerSetup");
+      else navigate("/home");
+
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("Something went wrong!");
     }
   };
 
@@ -76,26 +92,19 @@ const Signup = () => {
             />
           </div>
 
-          
-
-{/* ROLE SELECTOR */}
-<div className="role-selector">
-  
-  <select
-    name="role"
-    value={formData.role}
-    onChange={handleChange}
-  >
-    <option value="user">User</option>
-    <option value="owner">Restaurant Owner</option>
-    <option value="admin">Admin</option>
-    <option value="delivery">Delivery Partner</option>
-  </select>
-</div>
-
-
-
-
+          {/* ROLE SELECTOR */}
+          <div className="role-selector">
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+            >
+              <option value="user">User</option>
+              <option value="owner">Restaurant Owner</option>
+              <option value="admin">Admin</option>
+              <option value="delivery">Delivery Partner</option>
+            </select>
+          </div>
 
           <button type="submit" className="signup-btn">
             Sign Up
