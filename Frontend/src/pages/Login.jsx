@@ -1,16 +1,13 @@
 
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Signup = () => {
+const Login = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
-    password: "",
-    role: "user"
+    password: ""
   });
 
   const handleChange = (e) => {
@@ -24,7 +21,7 @@ const Signup = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -33,15 +30,27 @@ const Signup = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Signup failed");
+        alert(data.message || "Login failed");
         return;
       }
 
-      alert("Signup successful. Please login.");
-      navigate("/login");
+      // ✅ SAVE AUTH
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+
+      // ✅ REDIRECT BY ROLE
+      if (data.role === "admin") {
+        navigate("/admin");
+      } else if (data.role === "owner") {
+        navigate("/ResturantOwnerSetup");
+      } else if (data.role === "delivery") {
+        navigate("/DeliveryPartnerSetup");
+      } else {
+        navigate("/home");
+      }
 
     } catch (error) {
-      console.error("Signup error:", error);
+      console.error("Login error:", error);
       alert("Server error");
     }
   };
@@ -50,20 +59,9 @@ const Signup = () => {
     <div className="signup-wrapper">
       <div className="signup-card">
         <h2>🍔 Foodify</h2>
-        <p>Create your account</p>
+        <p>Login to your account</p>
 
         <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
           <div className="input-group">
             <input
               type="email"
@@ -86,31 +84,18 @@ const Signup = () => {
             />
           </div>
 
-          <div className="role-selector">
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-            >
-              <option value="user">User</option>
-              <option value="owner">Restaurant Owner</option>
-              <option value="admin">Admin</option>
-              <option value="delivery">Delivery Partner</option>
-            </select>
-          </div>
-
           <button type="submit" className="signup-btn">
-            Sign Up
+            Login
           </button>
         </form>
 
         <span className="signup-footer">
-          Already have an account?{" "}
+          Don’t have an account?{" "}
           <b
             style={{ cursor: "pointer", color: "#ff4d4f" }}
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/")}
           >
-            Login
+            Sign Up
           </b>
         </span>
       </div>
@@ -118,5 +103,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
-
+export default Login;

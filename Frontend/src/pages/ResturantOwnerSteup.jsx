@@ -1,12 +1,14 @@
+
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 
 const RestaurantOwnerSetup = () => {
   const navigate = useNavigate();
 
   const [restaurant, setRestaurant] = useState({
     name: "",
+    address: "",
     cuisine: "",
     openTime: "",
     closeTime: "",
@@ -44,10 +46,58 @@ const RestaurantOwnerSetup = () => {
     setRestaurant({ ...restaurant, menu: newMenu });
   };
 
-  const handleSubmit = (e) => {
+  /* =========================
+     SUBMIT → BACKEND
+  ========================= */    
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Restaurant data:", restaurant);
-    navigate("/home"); // TEMP: redirect after setup
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login first");
+        return;
+      }
+
+
+    // Ensure menu prices are numbers
+    const menuItems = restaurant.menu.map((item) => ({
+      name: item.name,
+      price: parseFloat(item.price) || 0,
+    }));
+
+
+      const res = await fetch("http://localhost:5000/api/restaurants", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: restaurant.name,
+          address: restaurant.address,
+          description: `
+Cuisine: ${restaurant.cuisine}
+Open: ${restaurant.openTime}
+Close: ${restaurant.closeTime}`,
+        menu: menuItems, // send processed array
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Failed to create restaurant");
+        return;
+      }
+
+      alert("Restaurant registered successfully ✅");
+      navigate("/home");
+
+    } catch (error) {
+      console.error("Restaurant setup error:", error);
+      alert("Something went wrong!");
+    }
   };
 
   return (
@@ -58,9 +108,11 @@ const RestaurantOwnerSetup = () => {
 
       <div className="profile-section">
         <p>Fill in the details to get your restaurant live on Foodify.</p>
+
         <form className="profile-form" onSubmit={handleSubmit}>
-          {/* Basic Info */}
+          {/* BASIC INFO */}
           <h2>Basic Info</h2>
+
           <div className="form-group">
             <label>Restaurant Name</label>
             <input
@@ -72,6 +124,19 @@ const RestaurantOwnerSetup = () => {
               required
             />
           </div>
+
+          <div className="form-group">
+            <label>Address</label>
+            <input
+              type="text"
+              name="address"
+              placeholder="Enter restaurant address"
+              value={restaurant.address}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
           <div className="form-group">
             <label>Cuisine</label>
             <select
@@ -88,8 +153,9 @@ const RestaurantOwnerSetup = () => {
             </select>
           </div>
 
-          {/* Timings */}
+          {/* OPERATING HOURS */}
           <h2>Operating Hours</h2>
+
           <div className="form-row">
             <div className="form-group">
               <label>Opening Time</label>
@@ -101,6 +167,7 @@ const RestaurantOwnerSetup = () => {
                 required
               />
             </div>
+
             <div className="form-group">
               <label>Closing Time</label>
               <input
@@ -113,10 +180,9 @@ const RestaurantOwnerSetup = () => {
             </div>
           </div>
 
-         
-
-          {/* Menu Items */}
+          {/* MENU ITEMS (UI ONLY) */}
           <h2>Menu Items</h2>
+
           {restaurant.menu.map((item, index) => (
             <div key={index} className="profile-section">
               <div className="form-row">
@@ -131,6 +197,7 @@ const RestaurantOwnerSetup = () => {
                     required
                   />
                 </div>
+
                 <div className="form-group">
                   <label>Price</label>
                   <input
@@ -143,25 +210,25 @@ const RestaurantOwnerSetup = () => {
                   />
                 </div>
               </div>
+
               <div className="form-group">
                 <label>Upload Image</label>
                 <input
                   type="file"
                   name="image"
-                  onChange={(e) => handleChange(e, index)}
                   accept="image/*"
+                  onChange={(e) => handleChange(e, index)}
                 />
               </div>
+
               {restaurant.menu.length > 1 && (
-                <div className="form-actions">
-                  <button
-                    type="button"
-                    className="btn-cancel"
-                    onClick={() => removeMenuItem(index)}
-                  >
-                    Remove Item
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => removeMenuItem(index)}
+                >
+                  Remove Item
+                </button>
               )}
             </div>
           ))}

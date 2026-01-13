@@ -20,6 +20,7 @@ app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 
+
 app.get("/", (req, res) => {
   res.send("Foodify API Running 🚀");
 });

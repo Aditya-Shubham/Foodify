@@ -9,7 +9,7 @@ import Profile from "./pages/Profile";
 import Home from "./pages/Home";
 import Orders from "./pages/Orders";
 import Cart from "./pages/Cart";
-
+import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 
 import Admin from "./pages/admin/Admin";
@@ -23,18 +23,23 @@ function Layout({ cart, addToCart, removeFromCart }) {
   return (
     <>
       <Routes>
-        <Route path="/admin" element={<Admin />} />  
+       
+        <Route path="/" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+         <Route path="/admin" element={<Admin />} />  
         <Route path="/ResturantOwnerSetup" element={<RestaurantOwnerSetup />} /> 
         <Route path="/DeliveryPartnerSetup" element={<DeliveryPartnerSetup />} />     
-        <Route path="/" element={<Signup />} />
+
         <Route path="/home" element={<Home addToCart={addToCart} />} />
         <Route path="/orders" element={<Orders addToCart={addToCart} />} />
         <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} addToCart={addToCart} />} />
         <Route path="/profile" element={<Profile />} />
       </Routes>
 
-      {/* Show BottomNav everywhere EXCEPT signup page */}
-      {location.pathname !== "/" && <BottomNav />}
+      {/* Show BottomNav everywhere EXCEPT signup page & login page */}
+      
+      {!["/", "/login"].includes(location.pathname) && <BottomNav />}
+
     </>
   );
 }
