@@ -147,9 +147,18 @@ Close: ${restaurant.closeTime}`,
             >
               <option value="">Select Cuisine</option>
               <option value="Indian">Indian</option>
+              <option value="Indian,Mughlai">Indian,Mughlai</option>
               <option value="Italian">Italian</option>
               <option value="Chinese">Chinese</option>
               <option value="Mexican">Mexican</option>
+              <option value="Fast Food">Fast Food</option>
+              <option value="Desserts">Desserts</option>
+              <option value="South Indian">South Indian</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Grill,BBQ">Grill,BBQ</option>
+              <option value="IndoChinese">IndoChinese</option>
+              <option value="Continental">Continental</option>
+              <option value="Korean">Korean</option>
             </select>
           </div>
 
