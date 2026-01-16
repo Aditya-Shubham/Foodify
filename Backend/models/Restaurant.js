@@ -15,6 +15,7 @@ const restaurantSchema = new mongoose.Schema(
     owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     menu: [menuItemSchema], // Add menu items
     isOpen: { type: Boolean, default: true },
+    approved: {type: Boolean, default: false}
   },
   { timestamps: true }
 );
