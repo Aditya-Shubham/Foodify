@@ -5,11 +5,23 @@ import jwt from "jsonwebtoken";
 /* =========================
    SIGNUP CONTROLLER
 ========================= */
+
 export const signup = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    // 🔹 Check if user already exists
+    // 🔒 Allow only ONE admin
+    if (role === "admin") {
+      const adminExists = await User.findOne({ role: "admin" });
+
+      if (adminExists) {
+        return res.status(403).json({
+          message: "Admin already exists"
+        });
+      }
+    }
+
+    // Check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -17,10 +29,8 @@ export const signup = async (req, res) => {
       });
     }
 
-    // 🔹 Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 🔹 Create user
     const user = await User.create({
       name,
       email,
@@ -29,17 +39,15 @@ export const signup = async (req, res) => {
     });
 
     res.status(201).json({
-      message: "Signup successful",
-      userId: user._id
+      message: "Signup successful"
     });
 
   } catch (error) {
     console.error("Signup error:", error);
-    res.status(500).json({
-      message: "Server error"
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 /* =========================
    LOGIN CONTROLLER

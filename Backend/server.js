@@ -7,6 +7,8 @@ import authRoutes from "./routes/authRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import deliveryPartnerRoutes from "./routes/deliveryPartnerRoutes.js";
+
 
 dotenv.config();
 connectDB();
@@ -19,6 +21,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/delivery-partners", deliveryPartnerRoutes);
+
 
 
 app.get("/", (req, res) => {

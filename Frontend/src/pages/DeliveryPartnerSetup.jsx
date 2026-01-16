@@ -26,13 +26,44 @@ const DeliveryPartnerSetup = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Delivery Partner Data:", partner);
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // TEMP: Redirect after signup
-    navigate("/home"); // later: /delivery/dashboard
-  };
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login first");
+      return;
+    }
+
+    const res = await fetch("http://localhost:5000/api/delivery-partners", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        phone: partner.phone,
+        address: partner.address
+        // images later (multer)
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Registration failed");
+      return;
+    }
+
+    alert("Delivery partner registered successfully 🚚");
+    navigate("/home");// later: /delivery/dashboard
+
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong");
+  }
+};
 
   return (
     <div className="profile-page">
