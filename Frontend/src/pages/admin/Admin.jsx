@@ -1,10 +1,10 @@
-   
-import React, { useEffect, useState } from "react";
+ import React, { useEffect, useState } from "react";
 
 const Admin = () => {
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("token");
 
+  // 🚫 Role protection
   if (role !== "admin") {
     return (
       <div className="admin-access-denied">
@@ -14,37 +14,21 @@ const Admin = () => {
     );
   }
 
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("restaurants");
+
+  // Restaurant state
   const [pendingRestaurants, setPendingRestaurants] = useState([]);
 
-    // ✅ Add handleApprove here
-  const handleApprove = async (id) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/restaurants/approve/${id}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
+  // Delivery partner state
+  const [pendingDeliveryPartners, setPendingDeliveryPartners] = useState([]);
 
-      if (res.ok) {
-        alert(data.message);
-        // remove approved restaurant from pending list
-        setPendingRestaurants(prev => prev.filter(r => r._id !== id));
-      } else {
-        alert(data.message || "Failed to approve");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Server error");
-    }
-  };
-
+  /* =========================
+     FETCH PENDING RESTAURANTS
+     ========================= */
   useEffect(() => {
-    if (activeSection === "dashboard") {
+    if (activeSection === "restaurants") {
       fetch("http://localhost:5000/api/restaurants/pending", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
         .then(data => setPendingRestaurants(data))
@@ -52,44 +36,102 @@ const Admin = () => {
     }
   }, [activeSection, token]);
 
+  /* =========================
+     FETCH PENDING DELIVERY PARTNERS
+     ========================= */
+  useEffect(() => {
+    if (activeSection === "delivery") {
+      fetch("http://localhost:5000/api/admin/delivery/pending", {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => setPendingDeliveryPartners(data))
+        .catch(err => console.error(err));
+    }
+  }, [activeSection, token]);
+
+  /* =========================
+     APPROVE RESTAURANT
+     ========================= */
+  const approveRestaurant = async (id) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/restaurants/approve/${id}`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (res.ok) {
+        setPendingRestaurants(prev =>
+          prev.filter(r => r._id !== id)
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* =========================
+     APPROVE DELIVERY PARTNER
+     ========================= */
+  const approveDeliveryPartner = async (id) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/admin/delivery/approve/${id}`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (res.ok) {
+        setPendingDeliveryPartners(prev =>
+          prev.filter(p => p._id !== id)
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="admin-container">
-      {/* ===== SIDEBAR ===== */}
+      {/* ========== SIDEBAR ========== */}
       <aside className="admin-sidebar">
         <h2>Admin Panel</h2>
-
         <nav>
-          <ul>
-            <li
-              className={activeSection === "dashboard" ? "active" : ""}
-              onClick={() => setActiveSection("dashboard")}
-            >
-              Restaurants
-            </li>
+        <ul>
+          <li
+            className={activeSection === "restaurants" ? "active" : ""}
+            onClick={() => setActiveSection("restaurants")}
+          >
+            🍽 Restaurants
+          </li>
 
-             <li
-              className={activeSection === "delivery" ? "active" : ""}
-              onClick={() => setActiveSection("delivery")}
-            >
-              Delivery Partners
-            </li>
+          <li
+            className={activeSection === "delivery" ? "active" : ""}
+            onClick={() => setActiveSection("delivery")}
+          >
+            🚚 Delivery Partners
+          </li>
 
-            <li
-              className={activeSection === "orders" ? "active" : ""}
-              onClick={() => setActiveSection("orders")}
-            >
-              Orders
-            </li>
-
-            
-          </ul>
+          <li
+            className={activeSection === "orders" ? "active" : ""}
+            onClick={() => setActiveSection("orders")}
+          >
+            📦 Orders
+          </li>
+        </ul>
         </nav>
       </aside>
 
-      {/* ===== MAIN CONTENT ===== */}
+      {/* ========== MAIN CONTENT ========== */}
       <main className="admin-main">
-        {/* DASHBOARD */}
-        {activeSection === "dashboard" && (
+
+        {/* ===== RESTAURANTS ===== */}
+        {activeSection === "restaurants" && (
           <div className="dashboard">
             <h3>Pending Restaurant Applications</h3>
 
@@ -100,20 +142,20 @@ const Admin = () => {
                 {pendingRestaurants.map(r => (
                   <div key={r._id} className="pending-card">
                     <h4>{r.name}</h4>
-                    <p><strong>Owner:</strong> {r.owner.name}</p>
-                    <p><strong>Email:</strong> {r.owner.email}</p>
-                    <p><strong>Address:</strong> {r.address}</p>
+                    <p><b>Owner:</b> {r.owner.name}</p>
+                    <p><b>Email:</b> {r.owner.email}</p>
+                    <p><b>Address:</b> {r.address}</p>
 
                     <div className="status pending">
                       ⏳ Pending Approval
                     </div>
 
-                     <button
-                      onClick={() => handleApprove(r._id)}
+                    <button
                       className="btn-approve"
-                         >
-                       Approve ✅
-                      </button>
+                      onClick={() => approveRestaurant(r._id)}
+                    >
+                      Approve ✅
+                    </button>
                   </div>
                 ))}
               </div>
@@ -121,27 +163,50 @@ const Admin = () => {
           </div>
         )}
 
-            {/* Delivery Partners */}
+        {/* ===== DELIVERY PARTNERS ===== */}
         {activeSection === "delivery" && (
           <div className="dashboard">
-            <h3>Pending Delivery Partners Applications</h3>
-             <p>No pending applications 🎉</p>
+            <h3>Pending Delivery Partner Applications</h3>
+
+            {pendingDeliveryPartners.length === 0 ? (
+              <p>No pending applications 🎉</p>
+            ) : (
+              <div className="pending-grid">
+                {pendingDeliveryPartners.map(p => (
+                  <div key={p._id} className="pending-card">
+                    <h4>{p.user.name}</h4>
+                    <p><b>Email:</b> {p.user.email}</p>
+                    <p><b>Phone:</b> {p.phone}</p>
+                    <p><b>Address:</b> {p.address}</p>
+
+                    <div className="status pending">
+                      ⏳ Pending Approval
+                    </div>
+
+                    <button
+                      className="btn-approve"
+                      onClick={() => approveDeliveryPartner(p._id)}
+                    >
+                      Approve ✅
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* ORDERS */}
+        {/* ===== ORDERS ===== */}
         {activeSection === "orders" && (
           <div className="dashboard">
             <h3>Orders</h3>
-            <p>Orders will appear here once user add items to cart.</p>
+            <p>Orders management will be added later.</p>
           </div>
         )}
 
-        
       </main>
     </div>
   );
 };
 
 export default Admin;
-

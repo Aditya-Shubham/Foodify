@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,10 +10,7 @@ const Login = () => {
   });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -28,59 +24,76 @@ const Login = () => {
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         alert(data.message || "Login failed");
         return;
       }
 
-      // ✅ SAVE AUTH
+       // ✅ SAVE AUTH
       const token = data.token;
       localStorage.setItem("token", token);
       localStorage.setItem("role", data.role);
 
-      // ✅ REDIRECT BY ROLE
+      /* ===== ROLE BASED REDIRECT ===== */
+
+      // ADMIN
       if (data.role === "admin") {
         navigate("/admin");
-      } else if (data.role === "owner") {
-  // Fetch owner's restaurant
-  const resRestaurant = await fetch(
-    "http://localhost:5000/api/restaurants/my",
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+      }
 
-  if (resRestaurant.status === 404) {
-    // Owner has not registered yet → go to setup page
-    navigate("/ResturantOwnerSetup");
-  } else if (!resRestaurant.ok) {
-    // some other error
-    alert("Failed to check restaurant status");
-  } else {
-    const restaurant = await resRestaurant.json();
+      // OWNER
+      else if (data.role === "owner") {
+        const resRestaurant = await fetch(
+          "http://localhost:5000/api/restaurants/my",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-    if (!restaurant.approved) {
-      // Owner registered, waiting for admin approval → pending page
-      navigate("/RestaurantPending");
-    } else {
-      // Restaurant approved → dashboard
-      navigate("/restaurant-dashboard");
-    }
-  }
+        if (resRestaurant.status === 404) {
+          navigate("/ResturantOwnerSetup");
+        } else if (!resRestaurant.ok) {
+          alert("Failed to check restaurant status");
+        } else {
+          const restaurant = await resRestaurant.json();
+          if (!restaurant.approved) {
+            navigate("/RestaurantPending");
+          } else {
+            navigate("/restaurant-dashboard");
+          }
+        }
+      }
 
+      // ✅ DELIVERY PARTNER (NEW)
+      else if (data.role === "delivery") {
+        const resPartner = await fetch(
+          "http://localhost:5000/api/delivery-partners/my",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      } else if (data.role === "delivery") {
-        navigate("/DeliveryPartnerSetup");
-      } else {
+        if (resPartner.status === 404) {
+          navigate("/DeliveryPartnerSetup");
+        } else if (!resPartner.ok) {
+          alert("Failed to check delivery partner status");
+        } else {
+          const partner = await resPartner.json();
+          if (!partner.isApproved) {
+            navigate("/DeliveryPartnerPending");
+          } else {
+            navigate("/delivery-dashboard");
+          }
+        }
+      }
+
+      else {
         navigate("/home");
       }
 
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (err) {
+      console.error(err);
       alert("Server error");
     }
   };
 
-  return (
+   return (
     <div className="signup-wrapper">
       <div className="signup-card">
         <h2>🍔 Foodify</h2>
