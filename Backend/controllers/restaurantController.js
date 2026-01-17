@@ -82,4 +82,41 @@ export const approveRestaurant = async (req, res) => {
     res.status(500).json({ message: "Failed to approve restaurant" });
   }
 };
+/*=====================================
+ GET restaurant of logged-in owner
+ ====================================== */
+/*export const getMyRestaurant = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findOne({ owner: req.user.id });
+
+    if (!restaurant) {
+      return res.json({ exists: false });
+    }
+
+    res.json({
+      exists: true,
+      approved: restaurant.approved,
+      restaurant
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+*/
+export const getMyRestaurant = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findOne({ owner: req.user.id });
+
+    if (!restaurant) {
+      // No restaurant exists → send 404
+      return res.status(404).json({ message: "No restaurant found" });
+    }
+
+    // Restaurant exists
+    res.status(200).json(restaurant);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 

@@ -40,7 +40,7 @@ function Layout({ cart, addToCart, removeFromCart }) {
 
       {/* Show BottomNav everywhere EXCEPT signup page & login page */}
       
-      {!["/", "/login"].includes(location.pathname) && <BottomNav />}
+      {!["/", "/login","/RestaurantPending","/ResturantOwnerSetup","/profile","/DeliveryPartnerSetup",].includes(location.pathname) && <BottomNav />}
 
     </>
   );
