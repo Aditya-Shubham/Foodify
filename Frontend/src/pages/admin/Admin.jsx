@@ -27,7 +27,7 @@ const Admin = () => {
      ========================= */
   useEffect(() => {
     if (activeSection === "restaurants") {
-      fetch("http://localhost:5000/api/restaurants/pending", {
+      fetch("http://localhost:5000/api/admin/restaurants/pending", {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -56,7 +56,7 @@ const Admin = () => {
   const approveRestaurant = async (id) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/restaurants/approve/${id}`,
+        `http://localhost:5000/api/admin/restaurants/approve/${id}`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` }

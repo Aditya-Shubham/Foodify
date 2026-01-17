@@ -29,9 +29,10 @@ export const getMyDeliveryPartner = async (req, res) => {
     const partner = await DeliveryPartner.findOne({ user: req.user.id });
 
     if (!partner) {
+        // No delivery partner exists → send 404
       return res.status(404).json({ message: "Not registered" });
     }
-
+// Delivery partner exists
     res.json(partner);
   } catch (error) {
     res.status(500).json({ message: "Server error" });

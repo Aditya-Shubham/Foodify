@@ -62,47 +62,11 @@ export const getPendingRestaurants = async (req, res) => {
     });
   }
 };
-/* ===============================
-   ADMIN: Approve Restaurant
-================================ */
-export const approveRestaurant = async (req, res) => {
-  try {
-    const restaurant = await Restaurant.findById(req.params.id);
 
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
-    }
-
-    restaurant.approved = true;
-    await restaurant.save();
-
-    res.status(200).json({ message: "Restaurant approved successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to approve restaurant" });
-  }
-};
 /*=====================================
  GET restaurant of logged-in owner
  ====================================== */
-/*export const getMyRestaurant = async (req, res) => {
-  try {
-    const restaurant = await Restaurant.findOne({ owner: req.user.id });
 
-    if (!restaurant) {
-      return res.json({ exists: false });
-    }
-
-    res.json({
-      exists: true,
-      approved: restaurant.approved,
-      restaurant
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-*/
 export const getMyRestaurant = async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({ owner: req.user.id });

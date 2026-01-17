@@ -1,6 +1,6 @@
 
 import express from "express";
-import { createRestaurant, getRestaurants ,getPendingRestaurants,approveRestaurant,getMyRestaurant} from "../controllers/restaurantController.js";
+import { createRestaurant, getRestaurants ,getPendingRestaurants,getMyRestaurant} from "../controllers/restaurantController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { allowRoles } from "../middleware/roleMiddleware.js";
 
@@ -28,12 +28,7 @@ router.get(
   allowRoles("admin"),
   getPendingRestaurants);
 
-  // Admin approves restaurant
-router.put(
-  "/approve/:id",
-  protect,
-  allowRoles("admin"),
-  approveRestaurant);
+  
 
 
 
