@@ -91,8 +91,9 @@ Close: ${restaurant.closeTime}`,
         return;
       }
 
-      alert("Restaurant registered successfully ✅");
-      navigate("/home");
+      alert("🎉 Registration Submitted Successfully");
+      navigate("/RestaurantPending");
+
 
     } catch (error) {
       console.error("Restaurant setup error:", error);
