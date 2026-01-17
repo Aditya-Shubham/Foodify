@@ -64,7 +64,14 @@ const Admin = () => {
               className={activeSection === "dashboard" ? "active" : ""}
               onClick={() => setActiveSection("dashboard")}
             >
-              Dashboard
+              Restaurants
+            </li>
+
+             <li
+              className={activeSection === "delivery" ? "active" : ""}
+              onClick={() => setActiveSection("delivery")}
+            >
+              Delivery Partners
             </li>
 
             <li
@@ -74,12 +81,7 @@ const Admin = () => {
               Orders
             </li>
 
-            <li
-              className={activeSection === "settings" ? "active" : ""}
-              onClick={() => setActiveSection("settings")}
-            >
-              Settings
-            </li>
+            
           </ul>
         </nav>
       </aside>
@@ -119,21 +121,23 @@ const Admin = () => {
           </div>
         )}
 
-        {/* ORDERS */}
-        {activeSection === "orders" && (
-          <div className="orders">
-            <h3>Orders</h3>
-            <p>Orders will appear here once connected to database.</p>
+            {/* Delivery Partners */}
+        {activeSection === "delivery" && (
+          <div className="dashboard">
+            <h3>Pending Delivery Partners Applications</h3>
+             <p>No pending applications 🎉</p>
           </div>
         )}
 
-        {/* SETTINGS */}
-        {activeSection === "settings" && (
-          <div className="settings">
-            <h3>Settings</h3>
-            <p>Manage preferences and configurations.</p>
+        {/* ORDERS */}
+        {activeSection === "orders" && (
+          <div className="dashboard">
+            <h3>Orders</h3>
+            <p>Orders will appear here once user add items to cart.</p>
           </div>
         )}
+
+        
       </main>
     </div>
   );
