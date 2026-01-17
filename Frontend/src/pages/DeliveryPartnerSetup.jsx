@@ -57,7 +57,7 @@ const handleSubmit = async (e) => {
     }
 
     alert("Delivery partner registered successfully 🚚");
-    navigate("/home");// later: /delivery/dashboard
+    navigate("/DeliveryPartnerPending");
 
   } catch (error) {
     console.error(error);

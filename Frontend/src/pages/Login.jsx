@@ -224,7 +224,7 @@ const Login = () => {
           Don’t have an account?{" "}
           <b
             style={{ cursor: "pointer", color: "#ff4d4f" }}
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("/")}
           >
             Sign Up
           </b>

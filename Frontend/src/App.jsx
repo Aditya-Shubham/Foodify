@@ -16,6 +16,7 @@ import Admin from "./pages/admin/Admin";
 import RestaurantOwnerSetup from "./pages/ResturantOwnerSteup";
 import DeliveryPartnerSetup from "./pages/DeliveryPartnerSetup";
 import RestaurantPending from "./pages/ResturantPending";
+import DeliveryPartnerPending from "./pages/DeliveryPartnerPending";
 
 function Layout({ cart, addToCart, removeFromCart }) {
   const location = useLocation();
@@ -30,7 +31,8 @@ function Layout({ cart, addToCart, removeFromCart }) {
         <Route path="/ResturantOwnerSetup" element={<RestaurantOwnerSetup />} /> 
         <Route path="/DeliveryPartnerSetup" element={<DeliveryPartnerSetup />} />     
         <Route path="/RestaurantPending" element={<RestaurantPending />} />
-
+        <Route path="/DeliveryPartnerPending" element={<DeliveryPartnerPending />} />
+        
 
         <Route path="/home" element={<Home addToCart={addToCart} />} />
         <Route path="/orders" element={<Orders addToCart={addToCart} />} />
