@@ -1,23 +1,73 @@
 import express from "express";
+import {
+  placeOrder,
+  getAvailableOrders,
+  acceptOrder,
+  updateOrderStatus,
+  getRestaurantOrders,
+  markOrderReady,
+  getReadyOrders,
+  assignDeliveryPartner,
+} from "../controllers/orderController.js";
+
 import { protect } from "../middleware/authMiddleware.js";
-import Order from "../models/Order.js";
+import { allowRoles } from "../middleware/routeMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, async (req, res) => {
-  const order = await Order.create({
-    user: req.user.id,
-    items: req.body.items,
-    totalAmount: req.body.total,
-    paymentMethod: req.body.paymentMethod
-  });
+/* USER */
+router.post("/", protect, allowRoles("user"), placeOrder);
 
-  res.json(order);
-});
+/* RESTAURANT */
+router.get(
+  "/restaurant",
+  protect,
+  allowRoles("restaurant"),
+  getRestaurantOrders
+);
 
-router.get("/my", protect, async (req, res) => {
-  const orders = await Order.find({ user: req.user.id });
-  res.json(orders);
-});
+router.put(
+  "/:id/ready",
+  protect,
+  allowRoles("restaurant"),
+  markOrderReady
+);
+
+/* ADMIN */
+router.get(
+  "/ready",
+  protect,
+  allowRoles("admin"),
+  getReadyOrders
+);
+
+router.put(
+  "/:id/assign",
+  protect,
+  allowRoles("admin"),
+  assignDeliveryPartner
+);
+
+/* DELIVERY */
+router.get(
+  "/available",
+  protect,
+  allowRoles("delivery"),
+  getAvailableOrders
+);
+
+router.put(
+  "/:id/accept",
+  protect,
+  allowRoles("delivery"),
+  acceptOrder
+);
+
+router.put(
+  "/:id/status",
+  protect,
+  allowRoles("delivery"),
+  updateOrderStatus
+);
 
 export default router;

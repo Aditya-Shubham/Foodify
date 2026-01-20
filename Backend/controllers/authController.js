@@ -41,26 +41,25 @@ export const signup = async (req, res) => {
   }
 };
 
-/* =========================
-   LOGIN CONTROLLER
-========================= */
+/* ================= LOGIN ================= */
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 🔹 Check user
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email & password required" });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 🔹 Compare password
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(400).json({ message: "Wrong password" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // 🔹 Generate JWT
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -68,15 +67,46 @@ export const login = async (req, res) => {
     );
 
     res.json({
-      message: "Login successful",
       token,
-      role: user.role
+      role: user.role,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// Delivery partner signup
+export const signupDelivery = async (req, res) => {
+  try {
+    const { name, email, password, phone, address } = req.body;
+
+    if (!name || !email || !password || !phone || !address) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: "Email already exists" });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      address,
+      password: hashedPassword,
+      role: "delivery",
+      aadhaar: req.files.aadhaar[0].path,
+      drivingLicense: req.files.drivingLicense[0].path,
     });
 
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({
-      message: "Server error"
-    });
+    res.status(201).json({ message: "Delivery partner signup successful", userId: user._id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };

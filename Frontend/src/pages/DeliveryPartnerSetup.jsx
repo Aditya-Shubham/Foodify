@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 const DeliveryPartnerSetup = () => {
   const navigate = useNavigate();
 
@@ -15,6 +14,8 @@ const DeliveryPartnerSetup = () => {
     drivingLicense: null,
   });
 
+  const [loading, setLoading] = useState(false);
+
   // Handle input changes
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -26,12 +27,50 @@ const DeliveryPartnerSetup = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  // Handle form submit
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Delivery Partner Data:", partner);
 
-    // TEMP: Redirect after signup
-    navigate("/home"); // later: /delivery/dashboard
+    if (!partner.aadhaar || !partner.drivingLicense) {
+      alert("Please upload Aadhaar and Driving License");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Use FormData for file uploads
+      const formData = new FormData();
+      formData.append("name", partner.name);
+      formData.append("email", partner.email);
+      formData.append("phone", partner.phone);
+      formData.append("address", partner.address);
+      formData.append("password", partner.password);
+      formData.append("aadhaar", partner.aadhaar);
+      formData.append("drivingLicense", partner.drivingLicense);
+      formData.append("role", "delivery"); // important!
+
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Signup failed");
+        setLoading(false);
+        return;
+      }
+
+      alert("🎉 Delivery Partner registered successfully!");
+      navigate("/login"); // go to login page
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -123,8 +162,8 @@ const DeliveryPartnerSetup = () => {
             />
           </div>
 
-          <button type="submit" className="btn-save">
-            Submit
+          <button type="submit" className="btn-save" disabled={loading}>
+            {loading ? "Registering..." : "Submit"}
           </button>
         </form>
       </div>

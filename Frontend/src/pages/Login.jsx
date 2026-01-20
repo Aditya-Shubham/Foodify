@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -7,7 +6,8 @@ const Login = () => {
 
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
+    role: "user" // default role
   });
 
   const handleChange = (e) => {
@@ -34,17 +34,18 @@ const Login = () => {
         return;
       }
 
-      // ✅ SAVE AUTH
+      // ✅ SAVE AUTH DATA
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
+      localStorage.setItem("userId", data.userId);
 
-      // ✅ REDIRECT BY ROLE
+      // ✅ ROLE-BASED REDIRECT
       if (data.role === "admin") {
         navigate("/admin");
       } else if (data.role === "owner") {
         navigate("/ResturantOwnerSetup");
       } else if (data.role === "delivery") {
-        navigate("/DeliveryPartnerSetup");
+        navigate("/delivery");
       } else {
         navigate("/home");
       }
@@ -62,6 +63,8 @@ const Login = () => {
         <p>Login to your account</p>
 
         <form onSubmit={handleSubmit}>
+
+          {/* EMAIL */}
           <div className="input-group">
             <input
               type="email"
@@ -73,6 +76,7 @@ const Login = () => {
             />
           </div>
 
+          {/* PASSWORD */}
           <div className="input-group">
             <input
               type="password"
@@ -84,6 +88,22 @@ const Login = () => {
             />
           </div>
 
+          {/* ROLE SELECT */}
+          <div className="role-selector">
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              required
+            >
+              <option value="user">User</option>
+              <option value="owner">Restaurant Owner</option>
+              <option value="admin">Admin</option>
+              <option value="delivery">Delivery Partner</option>
+            </select>
+          </div>
+
+          {/* LOGIN BUTTON */}
           <button type="submit" className="signup-btn">
             Login
           </button>

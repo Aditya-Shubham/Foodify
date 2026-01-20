@@ -1,6 +1,6 @@
 import React from "react";
 
-const Cart = ({ cart, removeFromCart, addToCart }) => {
+const Cart = ({ cart, setCart, removeFromCart, addToCart }) => {
   const [paymentMethod, setPaymentMethod] = React.useState("cod");
   const [upiId, setUpiId] = React.useState("");
   const [orderPlaced, setOrderPlaced] = React.useState(false);
@@ -12,15 +12,23 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
   /* ===============================
      GROUP ITEMS BY ID
   =============================== */
-  const groupedItems = cart.reduce((acc, item) => {
-    if (acc[item.id]) {
-      acc[item.id].quantity += 1;
-      acc[item.id].totalPrice += item.price;
-    } else {
-      acc[item.id] = { ...item, quantity: 1, totalPrice: item.price };
-    }
-    return acc;
-  }, {});
+ const groupedItems = cart.reduce((acc, item) => {
+  const key = item.id || item._id;
+
+  if (acc[key]) {
+    acc[key].quantity += 1;
+    acc[key].totalPrice += item.price;
+  } else {
+    acc[key] = {
+      ...item,
+      id: key,
+      quantity: 1,
+      totalPrice: item.price,
+    };
+  }
+
+  return acc;
+}, {});
 
   const itemsArray = Object.values(groupedItems);
 
@@ -54,23 +62,52 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
   /* ===============================
      PLACE ORDER HANDLER
   =============================== */
-  const placeOrder = () => {
-    if (paymentMethod === "upi" && !upiVerified) {
-      alert("⚠️ Please verify your UPI ID first");
+
+  const placeOrder = async () => {
+  if (paymentMethod === "upi" && !upiVerified) {
+    alert("⚠️ Please verify your UPI ID first");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+    const restaurantId = localStorage.getItem("selectedRestaurantId"); // Make sure this exists
+
+    if (!restaurantId) {
+      alert("⚠️ No restaurant selected!");
       return;
     }
 
-    localStorage.setItem("hasOrderedBefore", "true");
+    const res = await fetch("http://localhost:5000/api/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        restaurant: restaurantId,
+        items: itemsArray,
+        totalAmount: total,
+        paymentMethod,
+      }),
+    });
 
-    alert(
-      paymentMethod === "cod"
-        ? "🎉 Order placed successfully!"
-        : "🎉 Order placed successfully!"
+    const data = await res.json();
 
-    );
+    if (!res.ok) throw new Error(data.message || "Order failed");
 
+    alert(`🎉 Order placed successfully! Order ID: ${data._id}`);
     setOrderPlaced(true);
-  };
+
+    // ✅ Clear cart here
+    setCart([]); // assuming setCart comes from parent
+    localStorage.getItem("hasOrderedBefore", "true");
+
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+};
 
   return (
     <div className="page">
@@ -91,48 +128,45 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
             </p>
           )}
 
-          {itemsArray.map((item) => (
-            <div
-              key={item.id}
-              className="cart-item"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "8px"
-              }}
-            >
-              <div style={{ flex: 2 }}>
-                <p>
-                  <strong>{item.name}</strong>{" "}
-                  ({item.type === "veg" ? "🟢 Veg" : "🔴 Non-Veg"})
-                </p>
-              </div>
+         {itemsArray.map((item, index) => (
+  <div
+    key={`${item.id || item._id}-${index}`}
+    className="cart-item"
+  >
+    
+    {/* LEFT: ITEM NAME */}
+    <div className="cart-item-name">
+      <strong>{item.name}</strong>
+      <div className="item-type">
+        {item.type === "veg" ? "🟢 Veg" : "🔴 Non-Veg"}
+      </div>
+    </div>
 
-              <div style={{ flex: 1 }}>
-                <div className="qty-control">
-                  <button onClick={() => removeFromCart(item.id)}>-</button>
-                  <span>{item.quantity}</span>
-                  <button
-                    onClick={() =>
-                      addToCart({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        type: item.type
-                      })
-                    }
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
+    {/* CENTER: QUANTITY */}
+    <div className="cart-item-qty">
+      <button onClick={() => removeFromCart(item.id)}>-</button>
+      <span>{item.quantity}</span>
+      <button
+        onClick={() =>
+          addToCart({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            type: item.type,
+          })
+        }
+      >
+        +
+      </button>
+    </div>
 
-              <div style={{ flex: 0 }}>
-                <p>₹{item.totalPrice}</p>
-              </div>
-            </div>
-          ))}
+    {/* RIGHT: PRICE */}
+    <div className="cart-item-price">
+      ₹{item.totalPrice}
+    </div>
+
+  </div>
+))}
 
           {/* ===============================
              PAYMENT METHOD
