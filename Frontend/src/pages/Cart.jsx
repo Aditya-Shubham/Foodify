@@ -104,8 +104,13 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
             >
               <div style={{ flex: 2 }}>
                 <p>
-                  <strong>{item.name}</strong>{" "}
-                  ({item.type === "veg" ? "🟢 Veg" : "🔴 Non-Veg"})
+                  <p>
+  <strong>{item.name}</strong>{" "}
+  <span className={`food-type ${item.type === "VEG" ? "veg" : "nonveg"}`}>
+    {item.type === "VEG" ? "🟢 Veg" : "🔴 Non-Veg"}
+  </span>
+</p>
+
                 </p>
               </div>
 

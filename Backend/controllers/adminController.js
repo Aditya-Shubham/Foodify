@@ -42,3 +42,33 @@ export const approveDeliveryPartner = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+/* ===============================
+   ADMIN: Get Pending Restaurants
+================================ */
+export const getPendingRestaurants = async (req, res) => {
+  try {
+    const restaurants = await Restaurant.find({ approved: false })
+      .populate("owner", "name email");
+
+    res.status(200).json(restaurants);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch pending restaurants" });
+  }
+};
+
+/* ===============================
+   ADMIN: Get Pending Delivery Partners
+================================ */
+export const getPendingDeliveryPartners = async (req, res) => {
+  try {
+    const partners = await DeliveryPartner.find({ status: "pending" })
+      .populate("user", "name email");
+
+    res.status(200).json(partners);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch pending delivery partners" });
+  }
+};

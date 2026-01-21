@@ -53,19 +53,42 @@ function App() {
 
   // Add item to cart
   const addToCart = (item) => {
-    setCart([...cart, item]);
-  };
+  setCart(prevCart => {
+    // ✅ Use _id + type to distinguish Veg / Non-Veg
+    const existingItem = prevCart.find(
+      cartItem => cartItem._id === item._id && cartItem.type === item.type
+    );
+
+    if (existingItem) {
+      return prevCart.map(cartItem =>
+        cartItem._id === item._id && cartItem.type === item.type
+          ? { ...cartItem, qty: cartItem.qty + 1 }
+          : cartItem
+      );
+    }
+
+    return [...prevCart, { ...item, qty: 1 }];
+  });
+};
+
 
   // Remove one occurrence of item from cart
-  const removeFromCart = (id) => {
-    setCart((prevCart) => {
-      const index = prevCart.findIndex(item => item.id === id);
-      if (index === -1) return prevCart;
-      const newCart = [...prevCart];
-      newCart.splice(index, 1);
-      return newCart;
-    });
-  };
+  const removeFromCart = (item) => {
+  setCart(prevCart => {
+    return prevCart.reduce((acc, cartItem) => {
+      if (cartItem._id === item._id && cartItem.type === item.type) {
+        if (cartItem.qty > 1) {
+          acc.push({ ...cartItem, qty: cartItem.qty - 1 });
+        }
+        // qty = 1 → remove the item completely
+      } else {
+        acc.push(cartItem);
+      }
+      return acc;
+    }, []);
+  });
+};
+
 
   return (
     <BrowserRouter>

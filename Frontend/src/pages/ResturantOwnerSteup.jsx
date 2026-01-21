@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,31 +11,42 @@ const RestaurantOwnerSetup = () => {
     openTime: "",
     closeTime: "",
     image: null,
-    menu: [{ name: "", price: "", image: null }]
+    menu: [{ name: "", price: "", type: "VEG", image: null }],
+
   });
 
   const handleChange = (e, index = null) => {
-    const { name, value, files } = e.target;
+  const { name, value, files } = e.target;
 
-    if (name === "image" && index === null) {
-      setRestaurant({ ...restaurant, image: files[0] });
-    } else if (name === "image" && index !== null) {
-      const newMenu = [...restaurant.menu];
-      newMenu[index].image = files[0];
-      setRestaurant({ ...restaurant, menu: newMenu });
-    } else if (index !== null) {
-      const newMenu = [...restaurant.menu];
-      newMenu[index][name] = value;
-      setRestaurant({ ...restaurant, menu: newMenu });
-    } else {
-      setRestaurant({ ...restaurant, [name]: value });
-    }
-  };
+  // Restaurant image
+  if (name === "restaurantImage" && index === null) {
+    setRestaurant({ ...restaurant, image: files[0] });
+  }
+
+  // Menu image
+  else if (name === "menuImages" && index !== null) {
+    const newMenu = [...restaurant.menu];
+    newMenu[index].image = files[0];
+    setRestaurant({ ...restaurant, menu: newMenu });
+  }
+
+  // Menu text fields
+  else if (index !== null) {
+    const newMenu = [...restaurant.menu];
+    newMenu[index][name] = value;
+    setRestaurant({ ...restaurant, menu: newMenu });
+  }
+
+  // Other fields
+  else {
+    setRestaurant({ ...restaurant, [name]: value });
+  }
+};
 
   const addMenuItem = () => {
     setRestaurant({
       ...restaurant,
-      menu: [...restaurant.menu, { name: "", price: "", image: null }]
+     menu: [...restaurant.menu, { name: "", price: "", type: "VEG", image: null }],
     });
   };
 
@@ -48,7 +57,7 @@ const RestaurantOwnerSetup = () => {
 
   /* =========================
      SUBMIT → BACKEND
-  ========================= */    
+  ========================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,29 +68,40 @@ const RestaurantOwnerSetup = () => {
         return;
       }
 
+      const formData = new FormData();
 
-    // Ensure menu prices are numbers
-    const menuItems = restaurant.menu.map((item) => ({
-      name: item.name,
-      price: parseFloat(item.price) || 0,
-    }));
+      // Restaurant info
+      formData.append("name", restaurant.name);
+      formData.append("address", restaurant.address);
+      formData.append("cuisine", restaurant.cuisine);
+      formData.append("openTime", restaurant.openTime);
+      formData.append("closeTime", restaurant.closeTime);
 
+      // Restaurant image
+      if (restaurant.image) {
+        formData.append("restaurantImage", restaurant.image);
+      }
+
+      // menu items
+const menuForBackend = restaurant.menu.map(item => ({
+  name: item.name,
+  price: item.price,
+  type: item.type, // ✅ REQUIRED
+}));
+
+formData.append("menu", JSON.stringify(menuForBackend));
+
+// menu images
+restaurant.menu.forEach(item => {
+  if (item.image) formData.append("menuImages", item.image);
+});
 
       const res = await fetch("http://localhost:5000/api/restaurants", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`, // ❗ DO NOT set Content-Type
         },
-        body: JSON.stringify({
-          name: restaurant.name,
-          address: restaurant.address,
-          description: `
-Cuisine: ${restaurant.cuisine}
-Open: ${restaurant.openTime}
-Close: ${restaurant.closeTime}`,
-        menu: menuItems, // send processed array
-        })
+        body: formData,
       });
 
       const data = await res.json();
@@ -91,10 +111,8 @@ Close: ${restaurant.closeTime}`,
         return;
       }
 
-      alert("🎉 Registration Submitted Successfully");
+      alert("Restaurant registered successfully ✅");
       navigate("/RestaurantPending");
-
-
     } catch (error) {
       console.error("Restaurant setup error:", error);
       alert("Something went wrong!");
@@ -119,7 +137,6 @@ Close: ${restaurant.closeTime}`,
             <input
               type="text"
               name="name"
-              placeholder="Enter restaurant name"
               value={restaurant.name}
               onChange={handleChange}
               required
@@ -131,7 +148,6 @@ Close: ${restaurant.closeTime}`,
             <input
               type="text"
               name="address"
-              placeholder="Enter restaurant address"
               value={restaurant.address}
               onChange={handleChange}
               required
@@ -148,19 +164,27 @@ Close: ${restaurant.closeTime}`,
             >
               <option value="">Select Cuisine</option>
               <option value="Indian">Indian</option>
-              <option value="Indian,Mughlai">Indian,Mughlai</option>
               <option value="Italian">Italian</option>
               <option value="Chinese">Chinese</option>
               <option value="Mexican">Mexican</option>
               <option value="Fast Food">Fast Food</option>
-              <option value="Desserts">Desserts</option>
               <option value="South Indian">South Indian</option>
-              <option value="Bakery">Bakery</option>
               <option value="Grill,BBQ">Grill,BBQ</option>
-              <option value="IndoChinese">IndoChinese</option>
-              <option value="Continental">Continental</option>
-              <option value="Korean">Korean</option>
+              <option value="Bakery">Bakery</option>
+              <option value="Desserts">Desserts</option>
             </select>
+          </div>
+
+          {/* RESTAURANT IMAGE */}
+          <div className="form-group">
+            <label>Restaurant Image</label>
+            <input
+              type="file"
+              name="restaurantImage"
+              accept="image/*"
+              onChange={handleChange}
+              required
+            />
           </div>
 
           {/* OPERATING HOURS */}
@@ -190,7 +214,7 @@ Close: ${restaurant.closeTime}`,
             </div>
           </div>
 
-          {/* MENU ITEMS (UI ONLY) */}
+          {/* MENU ITEMS */}
           <h2>Menu Items</h2>
 
           {restaurant.menu.map((item, index) => (
@@ -201,7 +225,6 @@ Close: ${restaurant.closeTime}`,
                   <input
                     type="text"
                     name="name"
-                    placeholder="Enter item name"
                     value={item.name}
                     onChange={(e) => handleChange(e, index)}
                     required
@@ -213,19 +236,33 @@ Close: ${restaurant.closeTime}`,
                   <input
                     type="number"
                     name="price"
-                    placeholder="Enter price"
                     value={item.price}
                     onChange={(e) => handleChange(e, index)}
                     required
                   />
                 </div>
               </div>
+                 
+                <div className="form-group">
+                <label>Food Type</label>
+                 <select
+                   name="type"
+                   value={item.type}
+                   onChange={(e) => handleChange(e, index)}
+                   required
+                >
+                <option value="VEG">VEG</option>
+                <option value="NON_VEG">NON-VEG</option>
+                </select>
+                </div>
 
+
+                 
               <div className="form-group">
-                <label>Upload Image</label>
+                <label>Item Image</label>
                 <input
                   type="file"
-                  name="image"
+                  name="menuImages" multiple
                   accept="image/*"
                   onChange={(e) => handleChange(e, index)}
                 />
@@ -243,11 +280,7 @@ Close: ${restaurant.closeTime}`,
             </div>
           ))}
 
-          <button
-            type="button"
-            className="btn-add-address"
-            onClick={addMenuItem}
-          >
+          <button type="button" className="btn-add-address" onClick={addMenuItem}>
             + Add Menu Item
           </button>
 
@@ -261,4 +294,3 @@ Close: ${restaurant.closeTime}`,
 };
 
 export default RestaurantOwnerSetup;
-
