@@ -8,10 +8,16 @@ export const registerDeliveryPartner = async (req, res) => {
       return res.status(400).json({ message: "Already registered" });
     }
 
+    const aadhaarPath = req.files?.aadhaar?.[0]?.filename;
+    const drivingPath = req.files?.drivingLicense?.[0]?.filename;
+
     const partner = await DeliveryPartner.create({
       user: req.user.id,
       phone: req.body.phone,
-      address: req.body.address
+      address: req.body.address,
+      aadhaar: aadhaarPath,
+      drivingLicense: drivingPath,
+      isApproved: false
     });
 
     res.status(201).json({
@@ -19,9 +25,11 @@ export const registerDeliveryPartner = async (req, res) => {
       partner
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Failed to register" });
   }
 };
+
 
 /* GET MY DELIVERY PARTNER (NEW) */
 export const getMyDeliveryPartner = async (req, res) => {

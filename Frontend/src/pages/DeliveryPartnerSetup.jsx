@@ -26,7 +26,7 @@ const DeliveryPartnerSetup = () => {
     }
   };
 
-const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
@@ -36,17 +36,18 @@ const handleSubmit = async (e) => {
       return;
     }
 
+    const formData = new FormData();
+    formData.append("phone", partner.phone);
+    formData.append("address", partner.address);
+    formData.append("aadhaar", partner.aadhaar);
+    formData.append("drivingLicense", partner.drivingLicense);
+
     const res = await fetch("http://localhost:5000/api/delivery-partners", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({
-        phone: partner.phone,
-        address: partner.address
-        // images later (multer)
-      })
+      body: formData
     });
 
     const data = await res.json();
@@ -64,6 +65,7 @@ const handleSubmit = async (e) => {
     alert("Something went wrong");
   }
 };
+
 
   return (
     <div className="profile-page">

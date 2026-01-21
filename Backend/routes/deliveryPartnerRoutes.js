@@ -5,12 +5,22 @@ import {
 } from "../controllers/deliveryPartnerController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { allowRoles } from "../middleware/roleMiddleware.js";
+import { upload } from "../middleware/upload.js";
 
 const router = express.Router();
 
-router.post("/", protect, allowRoles("delivery"), registerDeliveryPartner);
+router.post(
+  "/",
+  protect,
+  allowRoles("delivery"),
+  upload.fields([
+    { name: "aadhaar", maxCount: 1 },
+    { name: "drivingLicense", maxCount: 1 }
+  ]),
+  registerDeliveryPartner
+);
 
-// ✅ NEW
 router.get("/my", protect, allowRoles("delivery"), getMyDeliveryPartner);
 
 export default router;
+
