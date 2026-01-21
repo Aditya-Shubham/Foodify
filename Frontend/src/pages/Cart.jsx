@@ -1,3 +1,4 @@
+// Cart.jsx
 import React from "react";
 
 const Cart = ({ cart, removeFromCart, addToCart }) => {
@@ -10,25 +11,10 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
   const [verifying, setVerifying] = React.useState(false);
 
   /* ===============================
-     GROUP ITEMS BY ID
-  =============================== */
-  const groupedItems = cart.reduce((acc, item) => {
-    if (acc[item.id]) {
-      acc[item.id].quantity += 1;
-      acc[item.id].totalPrice += item.price;
-    } else {
-      acc[item.id] = { ...item, quantity: 1, totalPrice: item.price };
-    }
-    return acc;
-  }, {});
-
-  const itemsArray = Object.values(groupedItems);
-
-  /* ===============================
      TOTAL QTY & SUBTOTAL
   =============================== */
-  const totalQty = itemsArray.reduce((sum, i) => sum + i.quantity, 0);
-  const subtotal = itemsArray.reduce((sum, i) => sum + i.totalPrice, 0);
+  const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+  const subtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
   /* ===============================
      FIRST ORDER CHECK
@@ -62,13 +48,7 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
 
     localStorage.setItem("hasOrderedBefore", "true");
 
-    alert(
-      paymentMethod === "cod"
-        ? "🎉 Order placed successfully!"
-        : "🎉 Order placed successfully!"
-
-    );
-
+    alert("🎉 Order placed successfully!");
     setOrderPlaced(true);
   };
 
@@ -91,9 +71,9 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
             </p>
           )}
 
-          {itemsArray.map((item) => (
+          {cart.map((item, index) => (
             <div
-              key={item.id}
+              key={index}
               className="cart-item"
               style={{
                 display: "flex",
@@ -102,39 +82,30 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
                 marginBottom: "8px"
               }}
             >
+              {/* ITEM NAME + TYPE */}
               <div style={{ flex: 2 }}>
                 <p>
-                  <p>
-  <strong>{item.name}</strong>{" "}
-  <span className={`food-type ${item.type === "VEG" ? "veg" : "nonveg"}`}>
-    {item.type === "VEG" ? "🟢 Veg" : "🔴 Non-Veg"}
-  </span>
-</p>
-
+                  <strong>{item.name}</strong>{" "}
+                  <span
+                    className={`food-type ${item.type === "VEG" ? "veg" : "nonveg"}`}
+                  >
+                    {item.type === "VEG" ? "🟢 Veg" : "🔴 Non-Veg"}
+                  </span>
                 </p>
               </div>
 
+              {/* QUANTITY CONTROL */}
               <div style={{ flex: 1 }}>
                 <div className="qty-control">
-                  <button onClick={() => removeFromCart(item.id)}>-</button>
-                  <span>{item.quantity}</span>
-                  <button
-                    onClick={() =>
-                      addToCart({
-                        id: item.id,
-                        name: item.name,
-                        price: item.price,
-                        type: item.type
-                      })
-                    }
-                  >
-                    +
-                  </button>
+                  <button onClick={() => removeFromCart(item)}>-</button>
+                  <span>{item.qty}</span>
+                  <button onClick={() => addToCart(item)}>+</button>
                 </div>
               </div>
 
+              {/* TOTAL PRICE */}
               <div style={{ flex: 0 }}>
-                <p>₹{item.totalPrice}</p>
+                <p>₹{item.price * item.qty}</p>
               </div>
             </div>
           ))}
@@ -167,7 +138,6 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
               UPI
             </label>
 
-            {/* 🔥 UPI INPUT + VERIFY */}
             {paymentMethod === "upi" && (
               <div className="upi-box">
                 <input
@@ -180,7 +150,6 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
                     setUpiVerified(false);
                   }}
                 />
-
                 <button
                   className="verify-upi-btn"
                   disabled={upiId.trim() === "" || verifying}
@@ -193,11 +162,7 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
                     }, 1000);
                   }}
                 >
-                  {verifying
-                    ? "Verifying..."
-                    : upiVerified
-                    ? "Verified "
-                    : "Verify "}
+                  {verifying ? "Verifying..." : upiVerified ? "Verified " : "Verify "}
                 </button>
               </div>
             )}
@@ -216,10 +181,7 @@ const Cart = ({ cart, removeFromCart, addToCart }) => {
               <button
                 className="place-order-btn"
                 onClick={placeOrder}
-                disabled={
-                  orderPlaced ||
-                  (paymentMethod === "upi" && !upiVerified)
-                }
+                disabled={orderPlaced || (paymentMethod === "upi" && !upiVerified)}
               >
                 {orderPlaced ? "ORDER PLACED " : "PLACE ORDER"}
               </button>
