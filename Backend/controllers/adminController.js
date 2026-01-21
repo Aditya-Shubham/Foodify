@@ -63,7 +63,7 @@ export const getPendingRestaurants = async (req, res) => {
 ================================ */
 export const getPendingDeliveryPartners = async (req, res) => {
   try {
-    const partners = await DeliveryPartner.find({ status: "pending" })
+    const partners = await DeliveryPartner.find({isApproved: false  })
       .populate("user", "name email");
 
     res.status(200).json(partners);

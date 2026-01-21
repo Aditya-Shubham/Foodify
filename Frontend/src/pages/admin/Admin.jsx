@@ -16,57 +16,53 @@ const Admin = () => {
 
   const [activeSection, setActiveSection] = useState("restaurants");
 
-  // Restaurant state
+  // States for pending items
   const [pendingRestaurants, setPendingRestaurants] = useState([]);
-
-  // Delivery partner state
   const [pendingDeliveryPartners, setPendingDeliveryPartners] = useState([]);
 
   /* =========================
-     FETCH PENDING RESTAURANTS
-     ========================= */
+     FETCH BOTH PENDING DATA ON MOUNT
+  ========================= */
   useEffect(() => {
-    if (activeSection === "restaurants") {
-      fetch("http://localhost:5000/api/admin/restaurants/pending", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => setPendingRestaurants(data))
-        .catch(err => console.error(err));
-    }
-  }, [activeSection, token]);
+    const fetchPendingData = async () => {
+      try {
+        const [restaurantsRes, deliveryRes] = await Promise.all([
+          fetch("http://localhost:5000/api/admin/restaurants/pending", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("http://localhost:5000/api/admin/delivery/pending", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-  /* =========================
-     FETCH PENDING DELIVERY PARTNERS
-     ========================= */
-  useEffect(() => {
-    if (activeSection === "delivery") {
-      fetch("http://localhost:5000/api/admin/delivery/pending", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => setPendingDeliveryPartners(data))
-        .catch(err => console.error(err));
-    }
-  }, [activeSection, token]);
+        const restaurantsData = await restaurantsRes.json();
+        const deliveryData = await deliveryRes.json();
+
+        setPendingRestaurants(restaurantsData);
+        setPendingDeliveryPartners(deliveryData);
+      } catch (err) {
+        console.error("Failed to fetch pending data:", err);
+      }
+    };
+
+    fetchPendingData();
+  }, [token]);
 
   /* =========================
      APPROVE RESTAURANT
-     ========================= */
+  ========================= */
   const approveRestaurant = async (id) => {
     try {
       const res = await fetch(
         `http://localhost:5000/api/admin/restaurants/approve/${id}`,
         {
           method: "PUT",
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (res.ok) {
-        setPendingRestaurants(prev =>
-          prev.filter(r => r._id !== id)
-        );
+        setPendingRestaurants((prev) => prev.filter((r) => r._id !== id));
       }
     } catch (err) {
       console.error(err);
@@ -75,20 +71,20 @@ const Admin = () => {
 
   /* =========================
      APPROVE DELIVERY PARTNER
-     ========================= */
+  ========================= */
   const approveDeliveryPartner = async (id) => {
     try {
       const res = await fetch(
         `http://localhost:5000/api/admin/delivery/approve/${id}`,
         {
           method: "PUT",
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (res.ok) {
-        setPendingDeliveryPartners(prev =>
-          prev.filter(p => p._id !== id)
+        setPendingDeliveryPartners((prev) =>
+          prev.filter((p) => p._id !== id)
         );
       }
     } catch (err) {
@@ -102,34 +98,33 @@ const Admin = () => {
       <aside className="admin-sidebar">
         <h2>Admin Panel</h2>
         <nav>
-        <ul>
-          <li
-            className={activeSection === "restaurants" ? "active" : ""}
-            onClick={() => setActiveSection("restaurants")}
-          >
-            🍽 Restaurants
-          </li>
+          <ul>
+            <li
+              className={activeSection === "restaurants" ? "active" : ""}
+              onClick={() => setActiveSection("restaurants")}
+            >
+              🍽 Restaurants
+            </li>
 
-          <li
-            className={activeSection === "delivery" ? "active" : ""}
-            onClick={() => setActiveSection("delivery")}
-          >
-            🚚 Delivery Partners
-          </li>
+            <li
+              className={activeSection === "delivery" ? "active" : ""}
+              onClick={() => setActiveSection("delivery")}
+            >
+              🚚 Delivery Partners
+            </li>
 
-          <li
-            className={activeSection === "orders" ? "active" : ""}
-            onClick={() => setActiveSection("orders")}
-          >
-            📦 Orders
-          </li>
-        </ul>
+            <li
+              className={activeSection === "orders" ? "active" : ""}
+              onClick={() => setActiveSection("orders")}
+            >
+              📦 Orders
+            </li>
+          </ul>
         </nav>
       </aside>
 
       {/* ========== MAIN CONTENT ========== */}
       <main className="admin-main">
-
         {/* ===== RESTAURANTS ===== */}
         {activeSection === "restaurants" && (
           <div className="dashboard">
@@ -139,16 +134,20 @@ const Admin = () => {
               <p>No pending applications 🎉</p>
             ) : (
               <div className="pending-grid">
-                {pendingRestaurants.map(r => (
+                {pendingRestaurants.map((r) => (
                   <div key={r._id} className="pending-card">
                     <h4>{r.name}</h4>
-                    <p><b>Owner:</b> {r.owner.name}</p>
-                    <p><b>Email:</b> {r.owner.email}</p>
-                    <p><b>Address:</b> {r.address}</p>
+                    <p>
+                      <b>Owner:</b> {r.owner.name}
+                    </p>
+                    <p>
+                      <b>Email:</b> {r.owner.email}
+                    </p>
+                    <p>
+                      <b>Address:</b> {r.address}
+                    </p>
 
-                    <div className="status pending">
-                      ⏳ Pending Approval
-                    </div>
+                    <div className="status pending">⏳ Pending Approval</div>
 
                     <button
                       className="btn-approve"
@@ -172,16 +171,20 @@ const Admin = () => {
               <p>No pending applications 🎉</p>
             ) : (
               <div className="pending-grid">
-                {pendingDeliveryPartners.map(p => (
+                {pendingDeliveryPartners.map((p) => (
                   <div key={p._id} className="pending-card">
                     <h4>{p.user.name}</h4>
-                    <p><b>Email:</b> {p.user.email}</p>
-                    <p><b>Phone:</b> {p.phone}</p>
-                    <p><b>Address:</b> {p.address}</p>
+                    <p>
+                      <b>Email:</b> {p.user.email}
+                    </p>
+                    <p>
+                      <b>Phone:</b> {p.phone}
+                    </p>
+                    <p>
+                      <b>Address:</b> {p.address}
+                    </p>
 
-                    <div className="status pending">
-                      ⏳ Pending Approval
-                    </div>
+                    <div className="status pending">⏳ Pending Approval</div>
 
                     <button
                       className="btn-approve"
@@ -203,7 +206,6 @@ const Admin = () => {
             <p>Orders management will be added later.</p>
           </div>
         )}
-
       </main>
     </div>
   );
