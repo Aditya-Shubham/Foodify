@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -17,13 +18,24 @@ const Profile = () => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
 
-  // Load addresses from localStorage on mount
-  useState(() => {
-    const savedAddresses = localStorage.getItem("deliveryAddresses");
-    if (savedAddresses) {
-      setAddresses(JSON.parse(savedAddresses));
-    }
-  }, []);
+  
+useEffect(() => {
+  const token = localStorage.getItem("token");
+
+  fetch("http://localhost:5000/api/user/profile", {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      setProfile({
+        name: data.name,
+        email: data.email,
+        phone: data.phone || ""
+      });
+      setAddresses(data.addresses || []);
+    });
+}, []);
+
   const [currentAddress, setCurrentAddress] = useState({
     label: "Home",
     street: "",
@@ -51,46 +63,33 @@ const Profile = () => {
   };
 
   // Save or update address
-  const handleSaveAddress = () => {
-    if (!currentAddress.street || !currentAddress.city || !currentAddress.pincode) {
-      alert("Please fill in all required fields");
-      return;
-    }
+  const handleSaveAddress = async () => {
+  let updatedAddresses;
 
-    let updatedAddresses;
-    
-    if (editingAddressId !== null) {
-      // Update existing address
-      updatedAddresses = addresses.map(addr => 
-        addr.id === editingAddressId ? { ...currentAddress, id: editingAddressId } : addr
-      );
-      setEditingAddressId(null);
-    } else {
-      // Add new address
-      const newAddress = {
-        ...currentAddress,
-        id: Date.now()
-      };
-      updatedAddresses = [...addresses, newAddress];
-    }
+  if (editingAddressId) {
+    updatedAddresses = addresses.map(a =>
+      a._id === editingAddressId ? { ...currentAddress, _id: editingAddressId } : a
+    );
+  } else {
+    updatedAddresses = [...addresses, currentAddress];
+  }
 
-    // Save to state and localStorage
-    setAddresses(updatedAddresses);
-    localStorage.setItem("deliveryAddresses", JSON.stringify(updatedAddresses));
+  setAddresses(updatedAddresses);
 
-    // Reset form
-    setCurrentAddress({
-      label: "Home",
-      street: "",
-      apartment: "",
-      landmark: "",
-      city: "",
-      state: "",
-      pincode: "",
-      isDefault: false
-    });
-    setShowAddressForm(false);
-  };
+  const token = localStorage.getItem("token");
+
+  await fetch("http://localhost:5000/api/user/addresses", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ addresses: updatedAddresses })
+  });
+
+  setShowAddressForm(false);
+};
+
 
   // Edit address
   const handleEditAddress = (id) => {
@@ -120,14 +119,21 @@ const Profile = () => {
   };
 
   // Save profile
-  const handleSaveProfile = () => {
-    if (!profile.name || !profile.email || !profile.phone) {
-      alert("Please fill in all profile fields");
-      return;
-    }
-    alert("Profile saved successfully!");
-    // Here you would typically save to a backend or local storage
-  };
+const handleSaveProfile = async () => {
+  const token = localStorage.getItem("token");
+
+  await fetch("http://localhost:5000/api/user/profile", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(profile)
+  });
+// Here you would typically save to a backend
+  alert("Profile saved successfully!");
+};
+
 
   return (
     <div className="page profile-page">

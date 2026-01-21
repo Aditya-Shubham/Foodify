@@ -10,6 +10,7 @@ import restaurantRoutes from "./routes/restaurantRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import deliveryPartnerRoutes from "./routes/deliveryPartnerRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -27,6 +28,7 @@ app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/delivery-partners", deliveryPartnerRoutes);
+app.use("/api/user", userRoutes);
 
 // serve images
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
