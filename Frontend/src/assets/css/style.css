@@ -2158,3 +2158,102 @@ resturant owner dashboard
 .btn-ready-delivery:hover {
   background: #51f38c;
 }
+
+/*=====================================
+      Delivery Partner Dashboard
+=======================================*/
+
+  /* Root wrapper — MUST fill screen */
+.dp-root {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Loading state */
+.dp-loading {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #666;
+}
+
+/* Center empty state */
+.dp-center-box {
+  text-align: center;
+  max-width: 320px;
+}
+
+.dp-title {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: #222;
+}
+
+.dp-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 18px;
+}
+
+/* Status badge */
+.dp-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dp-free {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.dp-assigned {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+/* Order card */
+.dp-card {
+  width: 360px;
+  padding: 22px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+}
+
+.dp-card-title {
+  margin-bottom: 14px;
+  font-size: 18px;
+  color: #222;
+}
+
+.dp-info p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+/* Action button */
+.dp-action-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #1976d2;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.dp-action-btn:hover {
+  background: #155fa0;
+}

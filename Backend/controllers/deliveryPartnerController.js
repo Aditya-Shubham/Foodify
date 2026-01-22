@@ -34,16 +34,25 @@ export const registerDeliveryPartner = async (req, res) => {
 /* GET MY DELIVERY PARTNER (NEW) */
 export const getMyDeliveryPartner = async (req, res) => {
   try {
-    const partner = await DeliveryPartner.findOne({ user: req.user.id });
+    const partner = await DeliveryPartner.findOne({ user: req.user.id })
+      .populate("user", "name email")
+      .populate({
+        path: "currentOrder",
+        populate: [
+          { path: "user", select: "name" },
+          { path: "restaurant", select: "name" }
+        ]
+      });
 
     if (!partner) {
-        // No delivery partner exists → send 404
       return res.status(404).json({ message: "Not registered" });
     }
-// Delivery partner exists
+
     res.json(partner);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 

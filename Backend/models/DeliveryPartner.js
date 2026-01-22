@@ -7,23 +7,36 @@ const deliveryPartnerSchema = new mongoose.Schema(
       ref: "User",
       required: true
     },
+
     phone: {
       type: String,
       required: true
     },
+
     address: {
       type: String,
       required: true
     },
-    aadhaar: {
-      type: String // later: image URL
-    },
-    drivingLicense: {
-      type: String // later: image URL
-    },
+
+    aadhaar: String,
+    drivingLicense: String,
+
     isApproved: {
       type: Boolean,
       default: false
+    },
+
+    // ✅ REQUIRED FOR DASHBOARD
+    status: {
+      type: String,
+      enum: ["FREE", "ASSIGNED"],
+      default: "FREE"
+    },
+
+    currentOrder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      default: null
     }
   },
   { timestamps: true }

@@ -29,7 +29,7 @@ const Login = () => {
         return;
       }
 
-       // ✅ SAVE AUTH
+      // ✅ SAVE AUTH DATA
       const token = data.token;
       localStorage.setItem("token", token);
       localStorage.setItem("role", data.role);
@@ -41,7 +41,7 @@ const Login = () => {
         navigate("/admin");
       }
 
-      // OWNER
+      // RESTAURANT OWNER
       else if (data.role === "owner") {
         const resRestaurant = await fetch(
           "http://localhost:5000/api/restaurants/my",
@@ -62,7 +62,7 @@ const Login = () => {
         }
       }
 
-      // ✅ DELIVERY PARTNER (NEW)
+      // DELIVERY PARTNER
       else if (data.role === "delivery") {
         const resPartner = await fetch(
           "http://localhost:5000/api/delivery-partners/my",
@@ -78,11 +78,12 @@ const Login = () => {
           if (!partner.isApproved) {
             navigate("/DeliveryPartnerPending");
           } else {
-            navigate("/delivery-dashboard");
+            navigate("/DeliveryPartnerDashboard");
           }
         }
       }
 
+      // OTHER USERS / DEFAULT
       else {
         navigate("/home");
       }
@@ -93,7 +94,7 @@ const Login = () => {
     }
   };
 
-   return (
+  return (
     <div className="signup-wrapper">
       <div className="signup-card">
         <h2>🍔 Foodify</h2>

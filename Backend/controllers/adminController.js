@@ -31,10 +31,10 @@ export const approveDeliveryPartner = async (req, res) => {
     const partner = await DeliveryPartner.findById(req.params.id);
 
     if (!partner) {
-      return res.status(404).json({ message: "Partner not found" });
+      return res.status(404).json({ message: "Delivery partner not found" });
     }
 
-    partner.status = "approved";
+    partner.isApproved = true; 
     await partner.save();
 
     res.json({ message: "Delivery partner approved successfully" });
