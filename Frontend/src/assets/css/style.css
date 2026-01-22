@@ -2152,3 +2152,14 @@ resturant owner dashboard
   font-size: 12px;
   color: #777;
 }
+
+/* Accept & Prepare button */
+
+.btn-accept-prepare{
+  
+  background: #a0f283;
+}
+
+.btn-accept-prepare:hover {
+  background: #51f38c;
+}

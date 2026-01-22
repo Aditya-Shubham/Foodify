@@ -40,3 +40,38 @@ export const getOwnerOrders = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
+
+
+/* OWNER → ACCEPT / PREPARE ORDER */
+export const acceptOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.status = "PREPARING";
+    await order.save();
+
+    res.json({ message: "Order accepted & preparing", order });
+  } catch (error) {
+    console.error("Accept order error:", error);
+    res.status(500).json({ message: "Failed to accept order" });
+  }
+};
+
+/* ADMIN → GET PREPARING ORDERS */
+export const getPreparingOrdersForAdmin = async (req, res) => {
+  try {
+    const orders = await Order.find({ status: "PREPARING" })
+      .populate("user", "name email")
+      .populate("restaurant", "name")
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    console.error("Admin orders fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch orders" });
+  }
+};

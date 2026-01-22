@@ -43,14 +43,20 @@ const RestaurantOwnerDashboard = () => {
           {orders.map((order) => (
             <div className="order-card" key={order._id}>
               <div className="order-header">
-                <span className="order-id">Order #{order._id.slice(-6)}</span>
+                <span className="order-id">
+                  Order #{order._id.slice(-6)}
+                </span>
                 <span className={`order-status ${order.status.toLowerCase()}`}>
                   {order.status}
                 </span>
               </div>
 
-              <p><strong>Customer:</strong> {order.user?.name}</p>
-              <p><strong>Total:</strong> ₹{order.totalAmount}</p>
+              <p>
+                <strong>Customer:</strong> {order.user?.name}
+              </p>
+              <p>
+                <strong>Total:</strong> ₹{order.totalAmount}
+              </p>
 
               <div className="items-section">
                 <strong>Items:</strong>
@@ -64,8 +70,43 @@ const RestaurantOwnerDashboard = () => {
               </div>
 
               <p className="order-time">
-                Ordered at: {new Date(order.createdAt).toLocaleString()}
+                Ordered at:{" "}
+                {new Date(order.createdAt).toLocaleString()}
               </p>
+
+              {/* ✅ ACCEPT & PREPARE BUTTON */}
+              {order.status === "PLACED" && (
+                <button
+                  className="btn-accept-prepare"
+                  onClick={async () => {
+                    try {
+                      const token = localStorage.getItem("token");
+
+                      await axios.patch(
+                        `http://localhost:5000/api/orders/${order._id}/accept`,
+                        {},
+                        {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        }
+                      );
+
+                      setOrders((prev) =>
+                        prev.map((o) =>
+                          o._id === order._id
+                            ? { ...o, status: "PREPARING" }
+                            : o
+                        )
+                      );
+                    } catch (err) {
+                      console.error("Accept order failed:", err);
+                    }
+                  }}
+                >
+                  Accept & Prepare
+                </button>
+              )}
             </div>
           ))}
         </div>
