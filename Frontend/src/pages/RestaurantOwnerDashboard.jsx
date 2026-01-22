@@ -32,6 +32,30 @@ const RestaurantOwnerDashboard = () => {
 
   if (loading) return <p className="loading-text">Loading orders...</p>;
 
+  // ✅ MARK ORDER AS READY
+  const markOrderReady = async (orderId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `http://localhost:5000/api/orders/${orderId}/ready`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, status: "READY" } : o
+        )
+      );
+    } catch (err) {
+      console.error("Failed to mark order as ready:", err);
+    }
+  };
+
   return (
     <div className="owner-dashboard">
       <h2 className="dashboard-title">Restaurant Owner Dashboard</h2>
@@ -43,9 +67,7 @@ const RestaurantOwnerDashboard = () => {
           {orders.map((order) => (
             <div className="order-card" key={order._id}>
               <div className="order-header">
-                <span className="order-id">
-                  Order #{order._id.slice(-6)}
-                </span>
+                <span className="order-id">Order #{order._id.slice(-6)}</span>
                 <span className={`order-status ${order.status.toLowerCase()}`}>
                   {order.status}
                 </span>
@@ -70,8 +92,7 @@ const RestaurantOwnerDashboard = () => {
               </div>
 
               <p className="order-time">
-                Ordered at:{" "}
-                {new Date(order.createdAt).toLocaleString()}
+                Ordered at: {new Date(order.createdAt).toLocaleString()}
               </p>
 
               {/* ✅ ACCEPT & PREPARE BUTTON */}
@@ -105,6 +126,16 @@ const RestaurantOwnerDashboard = () => {
                   }}
                 >
                   Accept & Prepare
+                </button>
+              )}
+
+              {/* ✅ READY FOR DELIVERY BUTTON */}
+              {order.status === "PREPARING" && (
+                <button
+                  className="btn-ready-delivery"
+                  onClick={() => markOrderReady(order._id)}
+                >
+                  Ready for Delivery
                 </button>
               )}
             </div>
