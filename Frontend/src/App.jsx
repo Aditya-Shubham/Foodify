@@ -1,4 +1,3 @@
-/*project*/
 import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import TopBar from "./pages/TopBar";
@@ -25,7 +24,6 @@ function Layout({ cart, addToCart, removeFromCart }) {
   return (
     <>
       <Routes>
-       
         <Route path="/" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />  
@@ -41,10 +39,7 @@ function Layout({ cart, addToCart, removeFromCart }) {
         <Route path="/profile" element={<Profile />} />
       </Routes>
 
-      {/* Show BottomNav everywhere EXCEPT signup page & login page */}
-      
-      {!["/", "/login","/RestaurantPending","/ResturantOwnerSetup","/profile","/DeliveryPartnerPending","/DeliveryPartnerSetup","/RestaurantOwnerDashboard",].includes(location.pathname) && <BottomNav />}
-
+      {!["/", "/login","/RestaurantPending","/ResturantOwnerSetup","/profile","/DeliveryPartnerPending","/DeliveryPartnerSetup","/RestaurantOwnerDashboard"].includes(location.pathname) && <BottomNav />}
     </>
   );
 }
@@ -52,44 +47,40 @@ function Layout({ cart, addToCart, removeFromCart }) {
 function App() {
   const [cart, setCart] = useState([]);
 
-  // Add item to cart
-  const addToCart = (item) => {
-  setCart(prevCart => {
-    // ✅ Use _id + type to distinguish Veg / Non-Veg
-    const existingItem = prevCart.find(
-      cartItem => cartItem._id === item._id && cartItem.type === item.type
-    );
-
-    if (existingItem) {
-      return prevCart.map(cartItem =>
-        cartItem._id === item._id && cartItem.type === item.type
-          ? { ...cartItem, qty: cartItem.qty + 1 }
-          : cartItem
+  // ✅ Add item to cart with restaurantId
+  const addToCart = (item, restaurantId) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(
+        cartItem => cartItem._id === item._id && cartItem.type === item.type
       );
-    }
 
-    return [...prevCart, { ...item, qty: 1 }];
-  });
-};
-
-
-  // Remove one occurrence of item from cart
-  const removeFromCart = (item) => {
-  setCart(prevCart => {
-    return prevCart.reduce((acc, cartItem) => {
-      if (cartItem._id === item._id && cartItem.type === item.type) {
-        if (cartItem.qty > 1) {
-          acc.push({ ...cartItem, qty: cartItem.qty - 1 });
-        }
-        // qty = 1 → remove the item completely
-      } else {
-        acc.push(cartItem);
+      if (existingItem) {
+        return prevCart.map(cartItem =>
+          cartItem._id === item._id && cartItem.type === item.type
+            ? { ...cartItem, qty: cartItem.qty + 1 }
+            : cartItem
+        );
       }
-      return acc;
-    }, []);
-  });
-};
 
+      return [...prevCart, { ...item, qty: 1, restaurantId }];
+    });
+  };
+
+  // ✅ Remove one occurrence of item
+  const removeFromCart = (item) => {
+    setCart(prevCart => {
+      return prevCart.reduce((acc, cartItem) => {
+        if (cartItem._id === item._id && cartItem.type === item.type) {
+          if (cartItem.qty > 1) {
+            acc.push({ ...cartItem, qty: cartItem.qty - 1 });
+          }
+        } else {
+          acc.push(cartItem);
+        }
+        return acc;
+      }, []);
+    });
+  };
 
   return (
     <BrowserRouter>
@@ -99,3 +90,4 @@ function App() {
 }
 
 export default App;
+

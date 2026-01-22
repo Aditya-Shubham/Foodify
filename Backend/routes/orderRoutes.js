@@ -1,23 +1,17 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import Order from "../models/Order.js";
+import {
+  placeOrder,
+  getOwnerOrders,
+} from "../controllers/orderController.js";
 
 const router = express.Router();
 
-router.post("/", protect, async (req, res) => {
-  const order = await Order.create({
-    user: req.user.id,
-    items: req.body.items,
-    totalAmount: req.body.total,
-    paymentMethod: req.body.paymentMethod
-  });
+// USER → place order
+router.post("/", protect, placeOrder);
 
-  res.json(order);
-});
-
-router.get("/my", protect, async (req, res) => {
-  const orders = await Order.find({ user: req.user.id });
-  res.json(orders);
-});
+// OWNER → view orders
+router.get("/owner", protect, getOwnerOrders);
 
 export default router;
+
