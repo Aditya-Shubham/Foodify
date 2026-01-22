@@ -57,7 +57,7 @@ const Login = () => {
           if (!restaurant.approved) {
             navigate("/RestaurantPending");
           } else {
-            navigate("/restaurant-dashboard");
+            navigate("/RestaurantOwnerDashboard");
           }
         }
       }

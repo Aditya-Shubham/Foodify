@@ -17,6 +17,7 @@ import RestaurantOwnerSetup from "./pages/ResturantOwnerSteup";
 import DeliveryPartnerSetup from "./pages/DeliveryPartnerSetup";
 import RestaurantPending from "./pages/ResturantPending";
 import DeliveryPartnerPending from "./pages/DeliveryPartnerPending";
+import RestaurantOwnerDashboard from "./pages/RestaurantOwnerDashboard";
 
 function Layout({ cart, addToCart, removeFromCart }) {
   const location = useLocation();
@@ -32,7 +33,7 @@ function Layout({ cart, addToCart, removeFromCart }) {
         <Route path="/DeliveryPartnerSetup" element={<DeliveryPartnerSetup />} />     
         <Route path="/RestaurantPending" element={<RestaurantPending />} />
         <Route path="/DeliveryPartnerPending" element={<DeliveryPartnerPending />} />
-        
+        <Route path="/RestaurantOwnerDashboard" element={<RestaurantOwnerDashboard />} />        
 
         <Route path="/home" element={<Home addToCart={addToCart} />} />
         <Route path="/orders" element={<Orders addToCart={addToCart} />} />
@@ -42,7 +43,7 @@ function Layout({ cart, addToCart, removeFromCart }) {
 
       {/* Show BottomNav everywhere EXCEPT signup page & login page */}
       
-      {!["/", "/login","/RestaurantPending","/ResturantOwnerSetup","/profile","/DeliveryPartnerPending","/DeliveryPartnerSetup",].includes(location.pathname) && <BottomNav />}
+      {!["/", "/login","/RestaurantPending","/ResturantOwnerSetup","/profile","/DeliveryPartnerPending","/DeliveryPartnerSetup","/RestaurantOwnerDashboard",].includes(location.pathname) && <BottomNav />}
 
     </>
   );
