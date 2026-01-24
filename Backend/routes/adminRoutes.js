@@ -5,7 +5,9 @@ import {
   approveRestaurant,
   approveDeliveryPartner,
   getPendingRestaurants,
-  getPendingDeliveryPartners
+  getPendingDeliveryPartners,
+  getFreeDeliveryPartners,
+  assignDeliveryPartner
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -39,5 +41,20 @@ router.put(
   allowRoles("admin"),
   approveDeliveryPartner
 );
+
+router.post(
+  "/assign-delivery",
+  protect,
+  allowRoles("admin"),
+  assignDeliveryPartner
+);
+
+router.get(
+  "/delivery/free",
+  protect,
+  allowRoles("admin"),
+  getFreeDeliveryPartners
+);
+
 
 export default router;

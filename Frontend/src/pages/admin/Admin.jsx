@@ -5,7 +5,6 @@ const Admin = () => {
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("token");
 
-  // 🚫 Role protection: Only admin can access this page
   if (role !== "admin") {
     return (
       <div className="admin-access-denied">
@@ -15,20 +14,15 @@ const Admin = () => {
     );
   }
 
-  // 🟢 State to track which section/tab is active
   const [activeSection, setActiveSection] = useState("restaurants");
-
-  // Pending applications
   const [pendingRestaurants, setPendingRestaurants] = useState([]);
   const [pendingDeliveryPartners, setPendingDeliveryPartners] = useState([]);
-
-  // Orders state
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [freePartners, setFreePartners] = useState([]);
+  const [selectedPartner, setSelectedPartner] = useState({}); // 🔹 added state
 
-  /* ==========================================================
-     FETCH PENDING RESTAURANT & DELIVERY PARTNER APPLICATIONS
-  ============================================================= */
+  // Fetch pending restaurants & partners
   useEffect(() => {
     const fetchPendingData = async () => {
       try {
@@ -47,22 +41,16 @@ const Admin = () => {
         console.error("Failed to fetch pending data:", err);
       }
     };
-
     fetchPendingData();
   }, [token]);
 
-  /* ========================================
-     FETCH ORDERS BASED ON ACTIVE TAB
-     - Preparing Orders → status = PREPARING
-     - Ready Orders → status = READY
-  ============================================ */
+  // Fetch orders for preparing or ready
   useEffect(() => {
     if (activeSection !== "orders" && activeSection !== "readyOrders") return;
 
     const fetchOrders = async () => {
       try {
         setOrdersLoading(true);
-
         const endpoint =
           activeSection === "orders"
             ? "http://localhost:5000/api/orders/admin/preparing"
@@ -71,7 +59,6 @@ const Admin = () => {
         const res = await axios.get(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         setOrders(res.data);
       } catch (err) {
         console.error("Failed to fetch orders:", err);
@@ -83,9 +70,22 @@ const Admin = () => {
     fetchOrders();
   }, [activeSection, token]);
 
-  /* =====================================
-     APPROVE RESTAURANT APPLICATION
-  ======================================= */
+  // Fetch free delivery partners (only for readyOrders)
+  useEffect(() => {
+    if (activeSection !== "readyOrders") return;
+
+    const fetchFreePartners = async () => {
+      const res = await axios.get(
+        "http://localhost:5000/api/admin/delivery/free",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setFreePartners(res.data);
+    };
+
+    fetchFreePartners();
+  }, [activeSection, token]);
+
+  // Approve Restaurant
   const approveRestaurant = async (id) => {
     try {
       const res = await fetch(
@@ -95,16 +95,13 @@ const Admin = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       if (res.ok) setPendingRestaurants((prev) => prev.filter((r) => r._id !== id));
     } catch (err) {
       console.error(err);
     }
   };
 
-  /* ======================================
-     APPROVE DELIVERY PARTNER APPLICATION
-  ========================================== */
+  // Approve Delivery Partner
   const approveDeliveryPartner = async (id) => {
     try {
       const res = await fetch(
@@ -114,7 +111,6 @@ const Admin = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       if (res.ok)
         setPendingDeliveryPartners((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
@@ -122,39 +118,53 @@ const Admin = () => {
     }
   };
 
-  
+  // 🔹 Assign Order
+  const assignOrder = async (orderId) => {
+    const partnerId = selectedPartner[orderId];
+    if (!partnerId) return;
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/admin/assign-delivery",
+        { orderId, partnerId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.status === 200) {
+        setOrders((prev) => prev.filter((o) => o._id !== orderId));
+        setFreePartners((prev) => prev.filter((p) => p._id !== partnerId));
+        setSelectedPartner((prev) => ({ ...prev, [orderId]: "" }));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to assign order");
+    }
+  };
+
   return (
     <div className="admin-container">
-      {/* ========== SIDEBAR ========== */}
       <aside className="admin-sidebar">
         <h2>Admin Panel</h2>
         <nav>
           <ul>
-            {/* Restaurants tab */}
             <li
               className={activeSection === "restaurants" ? "active" : ""}
               onClick={() => setActiveSection("restaurants")}
             >
               🍽 Restaurants
             </li>
-
-            {/* Delivery Partners tab */}
             <li
               className={activeSection === "delivery" ? "active" : ""}
               onClick={() => setActiveSection("delivery")}
             >
               🚚 Delivery Partners
             </li>
-
-            {/* Preparing Orders tab */}
             <li
               className={activeSection === "orders" ? "active" : ""}
               onClick={() => setActiveSection("orders")}
             >
               ⏳ Preparing Orders
             </li>
-
-            {/* Ready Orders tab */}
             <li
               className={activeSection === "readyOrders" ? "active" : ""}
               onClick={() => setActiveSection("readyOrders")}
@@ -165,13 +175,11 @@ const Admin = () => {
         </nav>
       </aside>
 
-      {/* ========== MAIN CONTENT ========== */}
       <main className="admin-main">
-        {/* ===== RESTAURANTS ===== */}
+        {/* Restaurants */}
         {activeSection === "restaurants" && (
           <div className="dashboard">
             <h3>Pending Restaurant Applications</h3>
-
             {pendingRestaurants.length === 0 ? (
               <p>No pending applications 🎉</p>
             ) : (
@@ -182,16 +190,8 @@ const Admin = () => {
                     <p><b>Owner:</b> {r.owner.name}</p>
                     <p><b>Email:</b> {r.owner.email}</p>
                     <p><b>Address:</b> {r.address}</p>
-
                     <div className="status pending">⏳ Pending Approval</div>
-
-                    {/* Approve restaurant button */}
-                    <button
-                      className="btn-approve"
-                      onClick={() => approveRestaurant(r._id)}
-                    >
-                      Approve ✅
-                    </button>
+                    <button className="btn-approve" onClick={() => approveRestaurant(r._id)}>Approve ✅</button>
                   </div>
                 ))}
               </div>
@@ -199,11 +199,10 @@ const Admin = () => {
           </div>
         )}
 
-        {/* ===== DELIVERY PARTNERS ===== */}
+        {/* Delivery Partners */}
         {activeSection === "delivery" && (
           <div className="dashboard">
             <h3>Pending Delivery Partner Applications</h3>
-
             {pendingDeliveryPartners.length === 0 ? (
               <p>No pending applications 🎉</p>
             ) : (
@@ -214,16 +213,8 @@ const Admin = () => {
                     <p><b>Email:</b> {p.user.email}</p>
                     <p><b>Phone:</b> {p.phone}</p>
                     <p><b>Address:</b> {p.address}</p>
-
                     <div className="status pending">⏳ Pending Approval</div>
-
-                    {/* Approve delivery partner button */}
-                    <button
-                      className="btn-approve"
-                      onClick={() => approveDeliveryPartner(p._id)}
-                    >
-                      Approve ✅
-                    </button>
+                    <button className="btn-approve" onClick={() => approveDeliveryPartner(p._id)}>Approve ✅</button>
                   </div>
                 ))}
               </div>
@@ -231,13 +222,10 @@ const Admin = () => {
           </div>
         )}
 
-        {/* ===== ORDERS (PREPARING OR READY) ===== */}
+        {/* Orders */}
         {(activeSection === "orders" || activeSection === "readyOrders") && (
           <div className="dashboard">
-            <h3>
-              {activeSection === "orders" ? "Preparing Orders" : "Ready Orders"}
-            </h3>
-
+            <h3>{activeSection === "orders" ? "Preparing Orders" : "Ready Orders"}</h3>
             {ordersLoading ? (
               <p>Loading orders...</p>
             ) : orders.length === 0 ? (
@@ -248,20 +236,43 @@ const Admin = () => {
                   <div key={order._id} className="order-card">
                     <div className="order-header">
                       <span>Order #{order._id.slice(-6)}</span>
-                      <span className={`status ${order.status.toLowerCase()}`}>
-                        {order.status}
-                      </span>
+                      <span className={`status ${order.status.toLowerCase()}`}>{order.status}</span>
                     </div>
-
                     <p><b>Customer:</b> {order.user?.name}</p>
                     <p><b>Restaurant:</b> {order.restaurant?.name}</p>
                     <p><b>Total:</b> ₹{order.totalAmount}</p>
                     <p><b>Payment:</b> {order.paymentMethod}</p>
-                    <p className="order-time">
-                      {new Date(order.createdAt).toLocaleString()}
-                    </p>
+                    <p className="order-time">{new Date(order.createdAt).toLocaleString()}</p>
 
-                    {/* Later: add Assign Delivery Partner button here */}
+                    {/* Assign Delivery Partner */}
+                    {activeSection === "readyOrders" && (
+                      <>
+                        <select
+                          value={selectedPartner[order._id] || ""}
+                          onChange={(e) =>
+                            setSelectedPartner((prev) => ({
+                              ...prev,
+                              [order._id]: e.target.value
+                            }))
+                          }
+                        >
+                          <option value="" disabled>
+                            Assign Delivery Partner
+                          </option>
+                          {freePartners.map((p) => (
+                            <option key={p._id} value={p._id}>
+                              {p.user?.name} (FREE)
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => assignOrder(order._id)}
+                          disabled={!selectedPartner[order._id]}
+                        >
+                          Assign
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -274,4 +285,3 @@ const Admin = () => {
 };
 
 export default Admin;
-

@@ -34,6 +34,20 @@ const orderSchema = new mongoose.Schema(
       enum: ["PLACED", "ACCEPTED", "PREPARING", "READY", "COMPLETED"],
       default: "PLACED",
     },
+
+    deliveryPartner: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "DeliveryPartner",
+  default: null
+},
+status: {
+  type: String,
+  enum: ["PLACED", "PREPARING", "READY", "OUT_FOR_DELIVERY", "DELIVERED"],
+  default: "PLACED"
+}
+
+
+
   },
   { timestamps: true }
 );

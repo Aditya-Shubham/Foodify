@@ -1,6 +1,6 @@
 import Restaurant from "../models/Restaurant.js";
 import DeliveryPartner from "../models/DeliveryPartner.js";
-
+import Order from "../models/Order.js";
 
 /* ===============================
    ADMIN: Approve Restaurant
@@ -70,5 +70,56 @@ export const getPendingDeliveryPartners = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch pending delivery partners" });
+  }
+};
+
+/*====================================
+assigning order to delivery partner
+====================================*/
+export const assignDeliveryPartner = async (req, res) => {
+  try {
+    const { orderId, partnerId } = req.body;
+
+    const order = await Order.findById(orderId);
+    if (!order || order.status !== "READY") {
+      return res.status(400).json({ message: "Order not ready" });
+    }
+
+    const partner = await DeliveryPartner.findById(partnerId);
+    if (!partner || partner.status !== "FREE") {
+      return res.status(400).json({ message: "Partner not available" });
+    }
+
+    // assign
+    order.deliveryPartner = partner._id;
+    order.status = "OUT_FOR_DELIVERY";
+
+    partner.currentOrder = order._id;
+    partner.status = "ASSIGNED";
+
+    await order.save();
+    await partner.save();
+
+    res.json({ message: "Delivery partner assigned successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Assignment failed" });
+  }
+};
+/*===================================
+identify free delivery partner
+===================================*/
+
+export const getFreeDeliveryPartners = async (req, res) => {
+  try {
+    const partners = await DeliveryPartner.find({
+      isApproved: true,
+      status: "FREE",
+    }).populate("user", "name email");
+
+    res.json(partners);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch partners" });
   }
 };

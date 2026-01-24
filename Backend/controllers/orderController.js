@@ -124,3 +124,30 @@ export const getReadyOrdersForAdmin = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
+
+/*==========================
+      order deliverd
+========================*/
+export const markDelivered = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    const partner = await DeliveryPartner.findOne({
+      user: req.user.id
+    });
+
+    if (!order || !partner) {
+      return res.status(404).json({ message: "Not found" });
+    }
+
+    order.status = "DELIVERED";
+    partner.status = "FREE";
+    partner.currentOrder = null;
+
+    await order.save();
+    await partner.save();
+
+    res.json({ message: "Order delivered" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed" });
+  }
+};
