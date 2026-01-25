@@ -29,11 +29,7 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: String,
 
-    status: {
-      type: String,
-      enum: ["PLACED", "ACCEPTED", "PREPARING", "READY", "COMPLETED"],
-      default: "PLACED",
-    },
+  
 
     deliveryPartner: {
   type: mongoose.Schema.Types.ObjectId,
