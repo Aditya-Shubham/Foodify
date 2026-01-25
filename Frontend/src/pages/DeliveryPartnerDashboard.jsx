@@ -1,101 +1,71 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const DeliveryPartnerDashboard = () => {
+const DeliveryDashboard = () => {
+  const [orders, setOrders] = useState([]);
   const token = localStorage.getItem("token");
-  const [partner, setPartner] = useState(null);
-  const [orders, setOrders] = useState([]); // 🔹 track assigned orders
-  const [loading, setLoading] = useState(true);
-
-  // Fetch partner info
-  const fetchPartner = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/delivery-partners/my",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setPartner(res.data);
-    } catch (err) {
-      console.error("Fetch partner failed", err);
-      setPartner(null);
-    }
-  };
-
-  // Fetch assigned orders
-  const fetchAssignedOrders = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/orders/delivery/my-orders",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setOrders(res.data);
-    } catch (err) {
-      console.error("Failed to fetch assigned orders", err);
-      setOrders([]);
-    }
-  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await fetchPartner();
-      await fetchAssignedOrders();
-      setLoading(false);
+    const fetchOrders = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:5000/api/orders/delivery/my-orders",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setOrders(res.data);
+      } catch (error) {
+        console.error("Failed to fetch orders", error);
+      }
     };
-    fetchData();
 
-    // 🔹 optional: poll every 10s for new assigned orders
-    const interval = setInterval(fetchAssignedOrders, 10000);
-    return () => clearInterval(interval);
+    fetchOrders();
   }, []);
 
-  if (loading) {
-    return <div className="dp-loading">Loading...</div>;
-  }
+  const formatAddress = (address) => {
+    if (!address) return "Address not available";
 
-  if (!partner) {
-    return (
-      <div className="dp-root">
-        <div className="dp-center-box">
-          <h2>No delivery profile found</h2>
-        </div>
-      </div>
-    );
-  }
+    return `${address.street}, ${address.city}, ${address.state} - ${address.pincode}`;
+  };
 
   return (
-    <div className="dp-root">
-      {orders.length === 0 ? (
-        <div className="dp-center-box">
-          <h2 className="dp-title">No order assigned</h2>
-          <p className="dp-subtitle">
-            You’ll be notified when an order is assigned
-          </p>
-          <span className="dp-badge dp-free">FREE</span>
-        </div>
-      ) : (
-        orders.map((order) => (
-          <div key={order._id} className="dp-card">
-            <h3>Active Delivery</h3>
-            <p><b>Order:</b> #{order._id.slice(-6)}</p>
-            <p><b>Restaurant:</b> {order.restaurant?.name}</p>
-            <p><b>Customer:</b> {order.user?.name}</p>
-            <p><b>Address:</b> {order.deliveryAddress || "N/A"}</p>
-            <p><b>Status:</b> {order.status}</p>
-            <span className="dp-badge dp-assigned">ASSIGNED</span>
-          </div>
-        ))
+    <div className="dashboard">
+      <h2 className="dashboard-title">My Delivery Orders</h2>
+
+      {orders.length === 0 && (
+        <p className="no-orders">No orders assigned</p>
       )}
+
+      {orders.map((order) => (
+        <div key={order._id} className="order-card">
+          <p>
+            <span className="label">Restaurant: </span>
+            <span className="value">{order.restaurant?.name}</span>
+          </p>
+
+          <p>
+            <span className="label">Customer: </span>
+            <span className="value">{order.user?.name}</span>
+          </p>
+
+          <p>
+            <span className="label">Delivery Address: </span>
+            <span className="value">{formatAddress(order.deliveryAddress)}</span>
+          </p>
+
+          <p>
+            <span className="label">Status: </span>
+            <span className="value">{order.status}</span>
+          </p>
+        </div>
+      ))}
     </div>
   );
 };
 
-export default DeliveryPartnerDashboard;
-
-
+export default DeliveryDashboard;
 
 

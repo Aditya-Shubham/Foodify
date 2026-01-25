@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import Restaurant from "../models/Restaurant.js";
+import DeliveryPartner from "../models/DeliveryPartner.js";
 
 /* ===============================
    USER → PLACE ORDER
@@ -36,19 +37,14 @@ export const placeOrder = async (req, res) => {
 ================================ */
 export const getOwnerOrders = async (req, res) => {
   try {
-    // 1️⃣ Find restaurants owned by this user
     const restaurants = await Restaurant.find({ owner: req.user.id }).select("_id");
 
-    if (!restaurants.length) {
-      return res.json([]); // owner has no restaurants
-    }
+    if (!restaurants.length) return res.json([]);
 
-    // 2️⃣ Extract restaurant IDs
     const restaurantIds = restaurants.map(r => r._id);
 
-    // 3️⃣ Fetch orders ONLY for these restaurants
     const orders = await Order.find({
-      restaurant: { $in: restaurantIds }
+      restaurant: { $in: restaurantIds },
     })
       .populate("user", "name email")
       .populate("restaurant", "name")
@@ -62,7 +58,7 @@ export const getOwnerOrders = async (req, res) => {
 };
 
 /* ===============================
-   OWNER → ACCEPT / PREPARE ORDER
+   OWNER → ACCEPT ORDER
 ================================ */
 export const acceptOrder = async (req, res) => {
   try {
@@ -90,7 +86,6 @@ export const markOrderReady = async (req, res) => {
     order.status = "READY";
     await order.save();
 
-    // Optional: notify admin via Socket.io
     if (req.io) {
       req.io.emit("order_ready", {
         orderId: order._id,
@@ -99,8 +94,8 @@ export const markOrderReady = async (req, res) => {
     }
 
     res.json({ success: true, message: "Order marked as ready", order });
-  } catch (err) {
-    console.error("markOrderReady error:", err);
+  } catch (error) {
+    console.error("markOrderReady error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -117,7 +112,7 @@ export const getPreparingOrdersForAdmin = async (req, res) => {
 
     res.json(orders);
   } catch (error) {
-    console.error("Admin preparing orders fetch error:", error);
+    console.error("Admin preparing orders error:", error);
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
@@ -134,20 +129,51 @@ export const getReadyOrdersForAdmin = async (req, res) => {
 
     res.json(orders);
   } catch (error) {
-    console.error("Admin ready orders fetch error:", error);
+    console.error("Admin ready orders error:", error);
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
 
-/*==========================
-      order deliverd
-========================*/
+/* ===============================
+   DELIVERY → GET MY ORDERS
+   (FIXED ADDRESS ISSUE HERE ✅)
+================================ */
+export const getDeliveryPartnerOrders = async (req, res) => {
+  try {
+    const partner = await DeliveryPartner.findOne({ user: req.user.id });
+    if (!partner) {
+      return res.status(404).json({ message: "Delivery partner not found" });
+    }
+
+    const orders = await Order.find({ deliveryPartner: partner._id })
+      .populate("restaurant", "name")
+      .populate("user", "name email addresses");
+
+    const formattedOrders = orders.map(order => {
+      const user = order.user?.toObject();
+      return {
+        ...order.toObject(),
+        deliveryAddress:
+          user?.addresses?.find(a => a.isDefault) ||
+          user?.addresses?.[0] ||
+          null,
+      };
+    });
+
+    res.json(formattedOrders);
+  } catch (error) {
+    console.error("Delivery partner orders error:", error);
+    res.status(500).json({ message: "Failed to fetch orders" });
+  }
+};
+
+/* ===============================
+   DELIVERY → MARK DELIVERED
+================================ */
 export const markDelivered = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
-    const partner = await DeliveryPartner.findOne({
-      user: req.user.id
-    });
+    const partner = await DeliveryPartner.findOne({ user: req.user.id });
 
     if (!order || !partner) {
       return res.status(404).json({ message: "Not found" });
@@ -162,6 +188,7 @@ export const markDelivered = async (req, res) => {
 
     res.json({ message: "Order delivered" });
   } catch (error) {
-    res.status(500).json({ message: "Failed" });
+    console.error("markDelivered error:", error);
+    res.status(500).json({ message: "Failed to mark delivered" });
   }
 };

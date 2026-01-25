@@ -1,8 +1,7 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
 import { allowRoles } from "../middleware/roleMiddleware.js"; // ✅ FIX ADDED
-import Order from "../models/Order.js"; 
-import DeliveryPartner from "../models/DeliveryPartner.js";
+
 import {
   placeOrder,
   getOwnerOrders,
@@ -11,6 +10,7 @@ import {
   getPreparingOrdersForAdmin,
   getReadyOrdersForAdmin,
   markDelivered,
+  getDeliveryPartnerOrders
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -44,28 +44,9 @@ router.patch(
 router.get(
   "/delivery/my-orders",
   protect,
-  allowRoles("delivery"),  // only delivery partners can access
-  async (req, res) => {
-    try {
-      // First, get the DeliveryPartner ID of the logged-in user
-      const partner = await DeliveryPartner.findOne({ user: req.user.id });
-      if (!partner) {
-        return res.status(404).json({ message: "Delivery partner profile not found" });
-      }
-
-      // Fetch orders assigned to this partner
-      const orders = await Order.find({ deliveryPartner: partner._id })
-        .populate("restaurant", "name")
-        .populate("user", "name email");
-
-      res.json(orders);
-    } catch (error) {
-      console.error("Failed to fetch delivery partner orders:", error);
-      res.status(500).json({ message: "Failed to fetch orders" });
-    }
-  }
+  allowRoles("delivery"),
+  getDeliveryPartnerOrders
 );
-
 
 export default router;
 
