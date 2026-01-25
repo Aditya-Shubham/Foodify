@@ -269,7 +269,9 @@ const Admin = () => {
                           onClick={() => assignOrder(order._id)}
                           disabled={!selectedPartner[order._id]}
                         >
+                        <div className="delivery-assign-btn">
                           Assign
+                          </div>
                         </button>
                       </>
                     )}

@@ -2257,3 +2257,14 @@ resturant owner dashboard
 .dp-action-btn:hover {
   background: #155fa0;
 }
+
+.delivery-assign-btn {
+ 
+   background: linear-gradient(135deg,#72e57e 0%, #0a5722 100%);
+  border: 1px solid #25ad29;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 550;
+}
