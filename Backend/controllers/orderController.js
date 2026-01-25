@@ -1,4 +1,5 @@
 import Order from "../models/Order.js";
+import Restaurant from "../models/Restaurant.js";
 
 /* ===============================
    USER → PLACE ORDER
@@ -35,7 +36,20 @@ export const placeOrder = async (req, res) => {
 ================================ */
 export const getOwnerOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
+    // 1️⃣ Find restaurants owned by this user
+    const restaurants = await Restaurant.find({ owner: req.user.id }).select("_id");
+
+    if (!restaurants.length) {
+      return res.json([]); // owner has no restaurants
+    }
+
+    // 2️⃣ Extract restaurant IDs
+    const restaurantIds = restaurants.map(r => r._id);
+
+    // 3️⃣ Fetch orders ONLY for these restaurants
+    const orders = await Order.find({
+      restaurant: { $in: restaurantIds }
+    })
       .populate("user", "name email")
       .populate("restaurant", "name")
       .sort({ createdAt: -1 });
