@@ -64,6 +64,10 @@ const DeliveryDashboard = () => {
             <span className="value">{formatAddress(order.deliveryAddress)}</span>
           </p>
 
+          <p>
+            <span className="label">payment method: </span>
+            <span className="value">{order.paymentMethod || "N/A"}</span>
+          </p>
 
           <p>
             <span className="label">Total Amount: </span>

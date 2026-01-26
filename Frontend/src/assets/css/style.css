@@ -1270,32 +1270,50 @@ body {
   gap: 10px;
   margin: 8px 0;
 }
-
-.upi-input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.place-order-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
+/* UPI Box container */
 .upi-box {
   display: flex;
   gap: 8px;
   margin-top: 8px;
 }
 
-.upi-input {
-  flex: 1;
-  padding: 8px;
+/* UPI input field */
+.upi-box input[type="text"] {
+  flex: 1; /* takes all available space */
+  padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+
+
+/* UPI verify button */
+.upi-box button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #ff8800;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.upi-box button:hover {
+  background-color: #ff4400;
+}
+
+.upi-box button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+.place-order-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .verify-upi-btn {
