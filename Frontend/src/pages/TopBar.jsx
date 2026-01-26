@@ -1,14 +1,9 @@
-
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiSearch, FiMic, FiX } from "react-icons/fi";
 
-
-const TopBar =({isVeg,setIsVeg}) => {
+const TopBar = ({ isVeg, setIsVeg, onSearch }) => {
   const [query, setQuery] = useState("");
   const [listening, setListening] = useState(false);
-  
-
 
   const handleMic = () => {
     const SpeechRecognition =
@@ -29,27 +24,28 @@ const TopBar =({isVeg,setIsVeg}) => {
 
     recognition.onresult = (event) => {
       const voiceText = event.results[0][0].transcript;
-      setQuery(voiceText);   // voice → text
+      setQuery(voiceText);
     };
 
-    recognition.onerror = (event) => {
-      console.error("Mic error:", event.error);
+    recognition.onerror = (err) => {
+      console.error("Mic error:", err);
       setListening(false);
     };
 
-    recognition.onend = () => {
-      setListening(false);
-    };
+    recognition.onend = () => setListening(false);
   };
-  
-  const clearSearch =() =>{
-    setQuery("");
-  };
+
+  const clearSearch = () => setQuery("");
+
+  // 🔍 Notify parent whenever search or veg filter changes
+  useEffect(() => {
+    if (onSearch) {
+      onSearch(query.trim().toLowerCase(), isVeg);
+    }
+  }, [query, isVeg, onSearch]);
 
   return (
     <nav className="navbar">
-      
-
       {/* SEARCH BAR */}
       <div className={`search-bar ${listening ? "listening" : ""}`}>
         <FiSearch className="icon" />
@@ -58,15 +54,14 @@ const TopBar =({isVeg,setIsVeg}) => {
           type="text"
           placeholder="Search for food, restaurant"
           value={query}
-          onChange={(e) => setQuery(e.target.value)} // typing works
+          onChange={(e) => setQuery(e.target.value)}
         />
 
-        {/* Clear Button */}
-        {query &&(
+        {query && (
           <FiX
-          className="clear"
-          onClick={clearSearch}
-          title="Clear"
+            className="clear"
+            onClick={clearSearch}
+            title="Clear"
           />
         )}
 
@@ -76,6 +71,8 @@ const TopBar =({isVeg,setIsVeg}) => {
           title="Voice search"
         />
       </div>
+
+      {/* VEG / NON-VEG TOGGLE */}
       <div
         className={`swiggy-toggle ${isVeg ? "veg" : "nonveg"}`}
         onClick={() => setIsVeg(!isVeg)}
