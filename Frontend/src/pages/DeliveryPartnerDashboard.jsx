@@ -32,7 +32,7 @@ const DeliveryDashboard = () => {
   };
 
   return (
-    <div className="dashboard">
+    <div className="deliverypartner-dashboard">
       <h2 className="dashboard-title">My Delivery Orders</h2>
 
       {orders.length === 0 && (
@@ -40,7 +40,7 @@ const DeliveryDashboard = () => {
       )}
 
       {orders.map((order) => (
-        <div key={order._id} className="order-card">
+        <div key={order._id} className="dashboard order-card">
           <p>
             <span className="label">Restaurant: </span>
             <span className="value">{order.restaurant?.name}</span>
@@ -52,8 +52,8 @@ const DeliveryDashboard = () => {
           </p>
 
           <p>
-            <span className="label">Phone: </span>
-            <span className="value">{order.customerPhone}</span>
+            <span className="label">Phone number: </span>
+            <span className="value">{order.customerPhone || "N/A"}</span>
           </p>
 
 
@@ -61,6 +61,27 @@ const DeliveryDashboard = () => {
             <span className="label">Delivery Address: </span>
             <span className="value">{formatAddress(order.deliveryAddress)}</span>
           </p>
+
+
+          <p>
+            <span className="label">Total Amount: </span>
+            <span className="value">₹{order.totalAmount}</span>
+          </p>
+
+          <p>
+            <span className="label">Total Items: </span>
+            <span className="value">{order.items?.length || 0}</span>
+          </p>
+
+          <p>
+            <span className="label">Order Items: </span>
+            <span className="value">
+              {order.items
+                ?.map((item) => `${item.name} x${item.quantity}`)
+                .join(", ") || "N/A"}
+            </span>
+          </p>
+
 
           <p>
             <span className="label">Status: </span>

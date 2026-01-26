@@ -153,7 +153,7 @@ export const getDeliveryPartnerOrders = async (req, res) => {
       const user = order.user?.toObject();
 
       return {
-        ...order.toObject(),
+        ...order.toObject(),//contain all order fields
         customerPhone: user?.phone || null, // ✅ phone exposed
         deliveryAddress:
           user?.addresses?.find(a => a.isDefault) ||
