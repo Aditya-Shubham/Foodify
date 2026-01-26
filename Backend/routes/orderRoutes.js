@@ -9,6 +9,7 @@ import {
   markOrderReady,
   getPreparingOrdersForAdmin,
   getReadyOrdersForAdmin,
+  getDeliveredOrdersForAdmin,
   markDelivered,
   getDeliveryPartnerOrders
 } from "../controllers/orderController.js";
@@ -47,6 +48,14 @@ router.get(
   allowRoles("delivery"),
   getDeliveryPartnerOrders
 );
+// ADMIN → view DELIVERED orders
+router.get(
+  "/admin/delivered",
+  protect,
+  allowRoles("admin"),
+  getDeliveredOrdersForAdmin
+);
+
 
 export default router;
 

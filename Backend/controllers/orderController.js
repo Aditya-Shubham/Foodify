@@ -195,3 +195,26 @@ export const markDelivered = async (req, res) => {
     res.status(500).json({ message: "Failed to mark delivered" });
   }
 };
+/* ===============================
+   ADMIN → GET DELIVERED ORDERS
+================================ */
+export const getDeliveredOrdersForAdmin = async (req, res) => {
+  try {
+    const orders = await Order.find({ status: "DELIVERED" })
+      .populate("user", "name email")
+      .populate("restaurant", "name")
+      .populate({
+        path: "deliveryPartner",
+        populate: {
+          path: "user",
+          select: "name email"
+        }
+      })
+      .sort({ createdAt: -1 });
+
+    res.json(orders);
+  } catch (error) {
+    console.error("Admin delivered orders error:", error);
+    res.status(500).json({ message: "Failed to fetch delivered orders" });
+  }
+};

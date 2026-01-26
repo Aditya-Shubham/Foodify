@@ -85,6 +85,30 @@ const Admin = () => {
     fetchFreePartners();
   }, [activeSection, token]);
 
+   // Fetch delivered orders
+useEffect(() => {
+  if (activeSection !== "deliveredOrders") return;
+
+  const fetchDeliveredOrders = async () => {
+    try {
+      setOrdersLoading(true);
+      const res = await axios.get(
+        "http://localhost:5000/api/orders/admin/delivered",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setOrders(res.data);
+    } catch (err) {
+      console.error("Failed to fetch delivered orders:", err);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  fetchDeliveredOrders();
+}, [activeSection, token]);
+
+
+
   // Approve Restaurant
   const approveRestaurant = async (id) => {
     try {
@@ -171,6 +195,13 @@ const Admin = () => {
             >
               🚀 Ready Orders
             </li>
+            <li
+              className={activeSection === "deliveredOrders" ? "active" : ""}
+              onClick={() => setActiveSection("deliveredOrders")}
+            >
+              📦 Delivered Orders
+            </li>
+
           </ul>
         </nav>
       </aside>
@@ -221,6 +252,39 @@ const Admin = () => {
             )}
           </div>
         )}
+
+         {activeSection === "deliveredOrders" && (
+  <div className="dashboard">
+    <h3>Delivered Orders</h3>
+
+    {ordersLoading ? (
+      <p>Loading orders...</p>
+    ) : orders.length === 0 ? (
+      <p>No delivered orders yet 📭</p>
+    ) : (
+      <div className="orders-list">
+        {orders.map((order) => (
+          <div key={order._id} className="order-card">
+            <div className="order-header">
+              <span>Order #{order._id.slice(-6)}</span>
+              <span className={`status ${order.status.toLowerCase()}`}>{order.status}</span>
+            </div>
+            <p><b>Customer:</b> {order.user?.name}</p>
+            <p><b>Restaurant:</b> {order.restaurant?.name}</p>
+            <p><b>Delivery Partner:</b> {order.deliveryPartner?.user?.name || "N/A"}</p>
+            <p><b>Total:</b> ₹{order.totalAmount}</p>
+            <p><b>Payment:</b> {order.paymentMethod}</p>
+
+            <p className="order-time">
+              Delivered at: {new Date(order.updatedAt).toLocaleString()}
+            </p>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
 
         {/* Orders */}
         {(activeSection === "orders" || activeSection === "readyOrders") && (
