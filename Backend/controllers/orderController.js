@@ -136,7 +136,7 @@ export const getReadyOrdersForAdmin = async (req, res) => {
 
 /* ===============================
    DELIVERY → GET MY ORDERS
-   (FIXED ADDRESS ISSUE HERE ✅)
+   (ADDRESS + PHONE FIXED ✅)
 ================================ */
 export const getDeliveryPartnerOrders = async (req, res) => {
   try {
@@ -147,12 +147,14 @@ export const getDeliveryPartnerOrders = async (req, res) => {
 
     const orders = await Order.find({ deliveryPartner: partner._id })
       .populate("restaurant", "name")
-      .populate("user", "name email addresses");
+      .populate("user", "name email phone addresses"); // ✅ phone added
 
     const formattedOrders = orders.map(order => {
       const user = order.user?.toObject();
+
       return {
         ...order.toObject(),
+        customerPhone: user?.phone || null, // ✅ phone exposed
         deliveryAddress:
           user?.addresses?.find(a => a.isDefault) ||
           user?.addresses?.[0] ||
@@ -166,6 +168,7 @@ export const getDeliveryPartnerOrders = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
+
 
 /* ===============================
    DELIVERY → MARK DELIVERED

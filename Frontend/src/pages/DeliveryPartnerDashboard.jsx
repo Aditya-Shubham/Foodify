@@ -52,6 +52,12 @@ const DeliveryDashboard = () => {
           </p>
 
           <p>
+            <span className="label">Phone: </span>
+            <span className="value">{order.customerPhone}</span>
+          </p>
+
+
+          <p>
             <span className="label">Delivery Address: </span>
             <span className="value">{formatAddress(order.deliveryAddress)}</span>
           </p>
