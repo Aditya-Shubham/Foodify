@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import TopBar from "./pages/TopBar";
 import BottomNav from "./pages/BottomNav";
@@ -47,7 +47,15 @@ function Layout({ cart, addToCart, removeFromCart }) {
 }
 
 function App() {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+  const savedCart = localStorage.getItem("cart");
+  return savedCart ? JSON.parse(savedCart) : [];
+});
+
+useEffect(() => {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}, [cart]);
+
 
   // ✅ Add item to cart with restaurantId
   const addToCart = (item, restaurantId) => {
