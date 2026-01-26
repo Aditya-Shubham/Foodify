@@ -28,6 +28,10 @@ const Menu = ({ addToCart }) => {
   const [restaurants, setRestaurants] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
 
+ // 🔥 FILTER STATE
+  const [isVeg, setIsVeg] = useState(null); 
+  // null = show ALL (default)
+
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -38,13 +42,26 @@ const Menu = ({ addToCart }) => {
     fetchRestaurants();
   }, []);
 
+const getFilteredMenu = () => {
+  if (!selectedRestaurant) return [];
+
+  if (isVeg === null) {
+    return selectedRestaurant.menu; // show all
+  }
+
+  return selectedRestaurant.menu.filter(
+    item => isVeg ? item.type === "VEG" : item.type === "NON_VEG"
+  );
+};
+
   const handleSelectRestaurant = (restaurant) => {
     setSelectedRestaurant(restaurant);
   };
 
   return (
     <>
-      <TopBar />
+      <TopBar isVeg={isVeg} setIsVeg={setIsVeg} />
+
       <div className="page">
         {!selectedRestaurant ? (
           <>
@@ -66,7 +83,7 @@ const Menu = ({ addToCart }) => {
               <button className="back-btn" onClick={() => setSelectedRestaurant(null)}>← Back to Restaurants</button>
             </div>
             <div className="menu-grid">
-              {selectedRestaurant.menu.map(item => (
+              {getFilteredMenu().map(item => (
                 <FoodCard key={item._id} item={{ ...item, restaurantId: selectedRestaurant._id }} addToCart={addToCart} />
               ))}
             </div>

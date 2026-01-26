@@ -4,10 +4,10 @@ import { useState } from "react";
 import { FiSearch, FiMic, FiX } from "react-icons/fi";
 
 
-const TopBar =() => {
+const TopBar =({isVeg,setIsVeg}) => {
   const [query, setQuery] = useState("");
   const [listening, setListening] = useState(false);
-  const [isVeg, setIsVeg] = useState(true);
+  
 
 
   const handleMic = () => {
