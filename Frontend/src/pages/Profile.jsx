@@ -1,10 +1,81 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import axios from "axios";
 
+// OrderHistory Component
+const OrderHistory = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:5000/api/orders/history", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setOrders(res.data);
+      } catch (err) {
+        console.error("Failed to fetch order history:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
+  if (loading) return <p className="loading-text">Loading order history...</p>;
+  if (!orders.length) return <p className="no-orders">No orders yet 😶</p>;
+
+  return (
+    <section className="order-history-section">
+      <h2>Order History</h2>
+      <div className="orders-list">
+        {orders.map(order => (
+          <div key={order._id} className="order-card">
+            <div className="order-header">
+              <span className="order-id">Order #{order._id.slice(-6)}</span>
+              <span className={`order-status ${order.status.toLowerCase()}`}>
+                {order.status}
+              </span>
+            </div>
+
+            <p><strong>Restaurant:</strong> {order.restaurant?.name}</p>
+            <p><strong>Total:</strong> ₹{order.totalAmount}</p>
+
+            {order.deliveryAddress && (
+              <p>
+                <strong>Address:</strong> {order.deliveryAddress.street}
+                {order.deliveryAddress.apartment && `, ${order.deliveryAddress.apartment}`}, 
+                {order.deliveryAddress.city}, {order.deliveryAddress.state} - {order.deliveryAddress.pincode}
+              </p>
+            )}
+
+            <div className="items-section">
+              <strong>Items:</strong>
+              <ul>
+                {order.items.map((item, index) => (
+                  <li key={index}>
+                    {item.name} × {item.quantity} - ₹{item.price * item.quantity}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <p className="order-time">
+              Ordered at: {new Date(order.createdAt).toLocaleString()}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+// Main Profile Component
 const Profile = () => {
   const navigate = useNavigate();
-  
+
   // User profile state
   const [profile, setProfile] = useState({
     name: "",
@@ -18,24 +89,6 @@ const Profile = () => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
 
-  
-useEffect(() => {
-  const token = localStorage.getItem("token");
-
-  fetch("http://localhost:5000/api/user/profile", {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-    .then(res => res.json())
-    .then(data => {
-      setProfile({
-        name: data.name,
-        email: data.email,
-        phone: data.phone || ""
-      });
-      setAddresses(data.addresses || []);
-    });
-}, []);
-
   const [currentAddress, setCurrentAddress] = useState({
     label: "Home",
     street: "",
@@ -47,13 +100,30 @@ useEffect(() => {
     isDefault: false
   });
 
-  // Handle profile input changes
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("http://localhost:5000/api/user/profile", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setProfile({
+          name: data.name,
+          email: data.email,
+          phone: data.phone || ""
+        });
+        setAddresses(data.addresses || []);
+      });
+  }, []);
+
+  // Profile change
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
     setProfile({ ...profile, [name]: value });
   };
 
-  // Handle address input changes
+  // Address change
   const handleAddressChange = (e) => {
     const { name, value, type, checked } = e.target;
     setCurrentAddress({
@@ -64,36 +134,46 @@ useEffect(() => {
 
   // Save or update address
   const handleSaveAddress = async () => {
-  let updatedAddresses;
+    let updatedAddresses;
 
-  if (editingAddressId) {
-    updatedAddresses = addresses.map(a =>
-      a._id === editingAddressId ? { ...currentAddress, _id: editingAddressId } : a
-    );
-  } else {
-    updatedAddresses = [...addresses, currentAddress];
-  }
+    if (editingAddressId) {
+      updatedAddresses = addresses.map(a =>
+        a._id === editingAddressId ? { ...currentAddress, _id: editingAddressId } : a
+      );
+    } else {
+      updatedAddresses = [...addresses, currentAddress];
+    }
 
-  setAddresses(updatedAddresses);
+    setAddresses(updatedAddresses);
 
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  await fetch("http://localhost:5000/api/user/addresses", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ addresses: updatedAddresses })
-  });
+    await fetch("http://localhost:5000/api/user/addresses", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ addresses: updatedAddresses })
+    });
 
-  setShowAddressForm(false);
-};
-
+    setShowAddressForm(false);
+    setEditingAddressId(null);
+    setCurrentAddress({
+      label: "Home",
+      street: "",
+      apartment: "",
+      landmark: "",
+      city: "",
+      state: "",
+      pincode: "",
+      isDefault: false
+    });
+  };
 
   // Edit address
   const handleEditAddress = (id) => {
-    const addressToEdit = addresses.find(addr => addr.id === id);
+    const addressToEdit = addresses.find(addr => addr._id === id);
     setCurrentAddress(addressToEdit);
     setEditingAddressId(id);
     setShowAddressForm(true);
@@ -102,7 +182,7 @@ useEffect(() => {
   // Delete address
   const handleDeleteAddress = (id) => {
     if (window.confirm("Are you sure you want to delete this address?")) {
-      const updatedAddresses = addresses.filter(addr => addr.id !== id);
+      const updatedAddresses = addresses.filter(addr => addr._id !== id);
       setAddresses(updatedAddresses);
       localStorage.setItem("deliveryAddresses", JSON.stringify(updatedAddresses));
     }
@@ -112,28 +192,27 @@ useEffect(() => {
   const handleSetDefault = (id) => {
     const updatedAddresses = addresses.map(addr => ({
       ...addr,
-      isDefault: addr.id === id
+      isDefault: addr._id === id
     }));
     setAddresses(updatedAddresses);
     localStorage.setItem("deliveryAddresses", JSON.stringify(updatedAddresses));
   };
 
   // Save profile
-const handleSaveProfile = async () => {
-  const token = localStorage.getItem("token");
+  const handleSaveProfile = async () => {
+    const token = localStorage.getItem("token");
 
-  await fetch("http://localhost:5000/api/user/profile", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(profile)
-  });
-// Here you would typically save to a backend
-  alert("Profile saved successfully!");
-};
+    await fetch("http://localhost:5000/api/user/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(profile)
+    });
 
+    alert("Profile saved successfully!");
+  };
 
   return (
     <div className="page profile-page">
@@ -204,7 +283,6 @@ const handleSaveProfile = async () => {
         {showAddressForm && (
           <div className="address-form">
             <h3>{editingAddressId ? "Edit Address" : "Add New Address"}</h3>
-            
             <div className="form-group">
               <label>Address Label </label>
               <select
@@ -335,7 +413,7 @@ const handleSaveProfile = async () => {
             </div>
           ) : (
             addresses.map((address) => (
-              <div key={address.id} className={`address-card ${address.isDefault ? 'default' : ''}`}>
+              <div key={address._id} className={`address-card ${address.isDefault ? 'default' : ''}`}>
                 <div className="address-header">
                   <span className="address-label">{address.label}</span>
                   {address.isDefault && <span className="default-badge">Default</span>}
@@ -350,16 +428,16 @@ const handleSaveProfile = async () => {
 
                 <div className="address-actions">
                   {!address.isDefault && (
-                    <button onClick={() => handleSetDefault(address.id)}>
+                    <button onClick={() => handleSetDefault(address._id)}>
                       Set as Default
                     </button>
                   )}
-                  <button onClick={() => handleEditAddress(address.id)}>
+                  <button onClick={() => handleEditAddress(address._id)}>
                     Edit
                   </button>
                   <button 
                     className="btn-delete" 
-                    onClick={() => handleDeleteAddress(address.id)}
+                    onClick={() => handleDeleteAddress(address._id)}
                   >
                     Delete
                   </button>
@@ -369,6 +447,9 @@ const handleSaveProfile = async () => {
           )}
         </div>
       </section>
+
+      {/* Order History Section */}
+      <OrderHistory />
     </div>
   );
 };

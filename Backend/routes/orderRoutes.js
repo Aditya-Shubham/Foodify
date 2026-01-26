@@ -11,7 +11,8 @@ import {
   getReadyOrdersForAdmin,
   getDeliveredOrdersForAdmin,
   markDelivered,
-  getDeliveryPartnerOrders
+  getDeliveryPartnerOrders,
+  getUserOrderHistory
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -55,6 +56,8 @@ router.get(
   allowRoles("admin"),
   getDeliveredOrdersForAdmin
 );
+// USER → get order history
+router.get("/history", protect, getUserOrderHistory);
 
 
 export default router;

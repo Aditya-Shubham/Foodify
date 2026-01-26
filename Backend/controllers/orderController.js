@@ -218,3 +218,27 @@ export const getDeliveredOrdersForAdmin = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch delivered orders" });
   }
 };
+
+/* ===============================
+   USER → GET ORDER HISTORY
+================================ */
+export const getUserOrderHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const orders = await Order.find({ user: userId })
+      .populate("restaurant", "name")
+      .sort({ createdAt: -1 });
+
+    const formattedOrders = orders.map(order => ({
+      ...order.toObject(),
+      deliveryAddress:
+        order.user?.addresses?.find(a => a.isDefault) || order.user?.addresses?.[0] || null
+    }));
+
+    res.json(formattedOrders);
+  } catch (error) {
+    console.error("Get user order history error:", error);
+    res.status(500).json({ message: "Failed to fetch order history" });
+  }
+};
