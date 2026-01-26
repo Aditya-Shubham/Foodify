@@ -2174,24 +2174,8 @@ resturant owner dashboard
       Delivery Partner Dashboard
 =======================================*/
 /* Root container for dashboard */
-.dashboard {
-  max-width: 800px;           /* narrower for focus */
-   margin-top: 8% ;
-   margin-left: 25% ; 
-  padding: 90px 100px;         /* reduced padding for compact look */
-  font-family: 'Inter', 'Roboto', Arial, sans-serif;
-  color: #000000;
-  background: linear-gradient(135deg, #f78e4d 0%, #f74d4d 100%);         /* pure white for clarity */
-  border-radius: 16px;         /* smoother corners */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08); /* softer, modern shadow */
-  text-align: center;          /* everything center */
-  transition: transform 0.2s, box-shadow 0.2s;
-}
 
-.dashboard:hover {
-  transform: translateY(-4px);  /* subtle hover lift */
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-}
+
 
 
 /* Dashboard Title */
@@ -2205,132 +2189,8 @@ resturant owner dashboard
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif
 }
 
-/* Empty state */
-.no-orders {
-  text-align: center;
-  color: #777;
-  font-style: italic;
-  font-size: 16px;
-  padding: 40px 0;
-}
 
-/* Order card */
-.order-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px 25px;
-  margin-bottom: 20px;
-  
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
 
-.order-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-/* Order card header */
-.order-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
-
-.order-card-header h3 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #111;
-}
-
-.order-status {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-free {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.status-assigned {
-  background: #fff3e0;
-  color: #ef6c00;
-}
-
-/* Order info rows */
-.order-info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.order-info p {
-  margin: 6px 0;
-  font-size: 14px;
-  color: #444;
-}
-
-.order-info .label {
-  font-weight: 600;
-  color: #555;
-}
-
-.order-info .value {
-  color: #111;
-  word-break: break-word;
-}
-
-/* Delivery address */
-.delivery-address {
-  background: #f1f5f9;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-top: 12px;
-  color: #222;
-  line-height: 1.5;
-}
-
-/* Action buttons */
-.order-card button {
-  margin-top: 18px;
-  padding: 12px 0;
-  width: 100%;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-  background: linear-gradient(135deg,#72e57e 0%, #0a5722 100%);
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-
-.order-card button:hover {
-  background: linear-gradient(135deg,#5dd26d 0%, #084517 100%);
-  transform: translateY(-2px);
-}
-
-/* Responsive design */
-@media (max-width: 600px) {
-  .order-info {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard {
-    padding: 15px;
-  }
-
-  .order-card {
-    padding: 15px 18px;
-  }
-}
 .label{
   font-weight: 550;
   font-family: Arial, Helvetica, sans-serif;
