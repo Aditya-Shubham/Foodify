@@ -5,23 +5,25 @@ const DeliveryDashboard = () => {
   const [orders, setOrders] = useState([]);
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:5000/api/orders/delivery/my-orders",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setOrders(res.data);
-      } catch (error) {
-        console.error("Failed to fetch orders", error);
-      }
-    };
 
+  // Move fetchOrders here so it can be reused
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:5000/api/orders/delivery/my-orders",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setOrders(res.data);
+    } catch (error) {
+      console.error("Failed to fetch orders", error);
+    }
+  };
+
+
+  useEffect(() => {
+    
     fetchOrders();
   }, []);
 
@@ -87,6 +89,48 @@ const DeliveryDashboard = () => {
             <span className="label">Status: </span>
             <span className="value">{order.status}</span>
           </p>
+
+    {/* ✅ Delivered Button */}
+{order.status === "OUT_FOR_DELIVERY" && (
+  <button
+    onClick={async () => {
+      try {
+        const token = localStorage.getItem("token"); // Auth token
+        const res = await fetch(`http://localhost:5000/api/orders/${order._id}/delivered`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Safe JSON parse
+        let data = {};
+        try {
+          data = await res.json();
+        } catch (err) {
+          console.warn("No JSON returned", err);
+        }
+
+        if (res.ok) {
+          alert(data.message || "Order marked as delivered!");
+          fetchOrders(); // Refresh orders
+        } else {
+          alert(data.message || "Failed to mark delivered");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Server error");
+      }
+    }}
+    className="order-delivered-btn"
+    
+  >
+    Delivered
+  </button>
+)}
+
+
         </div>
       ))}
     </div>
