@@ -1,5 +1,8 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
+
 import TopBar from "./pages/TopBar";
 import BottomNav from "./pages/BottomNav";
 import "./assets/css/style.css";
@@ -19,6 +22,21 @@ import DeliveryPartnerPending from "./pages/DeliveryPartnerPending";
 import RestaurantOwnerDashboard from "./pages/RestaurantOwnerDashboard";
 import DeliveryPartnerDashboard from "./pages/DeliveryPartnerDashboard";
 
+/* ======================
+   HELPER → GET USER ID
+====================== */
+const getUserId = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode(token);
+    return decoded.id;
+  } catch {
+    return null;
+  }
+};
+
 function Layout({ cart, addToCart, removeFromCart }) {
   const location = useLocation();
 
@@ -27,37 +45,61 @@ function Layout({ cart, addToCart, removeFromCart }) {
       <Routes>
         <Route path="/" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<Admin />} />  
-        <Route path="/ResturantOwnerSetup" element={<RestaurantOwnerSetup />} /> 
-        <Route path="/DeliveryPartnerSetup" element={<DeliveryPartnerSetup />} />     
+        <Route path="/admin" element={<Admin />} />
+
+        <Route path="/ResturantOwnerSetup" element={<RestaurantOwnerSetup />} />
+        <Route path="/DeliveryPartnerSetup" element={<DeliveryPartnerSetup />} />
         <Route path="/RestaurantPending" element={<RestaurantPending />} />
         <Route path="/DeliveryPartnerPending" element={<DeliveryPartnerPending />} />
-        <Route path="/RestaurantOwnerDashboard" element={<RestaurantOwnerDashboard />} />        
+        <Route path="/RestaurantOwnerDashboard" element={<RestaurantOwnerDashboard />} />
         <Route path="/DeliveryPartnerDashboard" element={<DeliveryPartnerDashboard />} />
 
         <Route path="/home" element={<Home addToCart={addToCart} />} />
         <Route path="/orders" element={<Orders addToCart={addToCart} />} />
-        <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} addToCart={addToCart} />} />
+        <Route
+          path="/cart"
+          element={<Cart cart={cart} removeFromCart={removeFromCart} addToCart={addToCart} />}
+        />
         <Route path="/profile" element={<Profile />} />
       </Routes>
 
-      {!["/", "/login","/RestaurantPending","/ResturantOwnerSetup","/profile","/DeliveryPartnerPending","/DeliveryPartnerSetup","/RestaurantOwnerDashboard","/DeliveryPartnerDashboard"].includes(location.pathname) && <BottomNav />}
+      {![
+        "/",
+        "/login",
+        "/RestaurantPending",
+        "/ResturantOwnerSetup",
+        "/profile",
+        "/DeliveryPartnerPending",
+        "/DeliveryPartnerSetup",
+        "/RestaurantOwnerDashboard",
+        "/DeliveryPartnerDashboard"
+      ].includes(location.pathname) && <BottomNav />}
     </>
   );
 }
 
 function App() {
+  const userId = getUserId();
+
+  const cartKey = userId ? `cart_${userId}` : null;
+
   const [cart, setCart] = useState(() => {
-  const savedCart = localStorage.getItem("cart");
-  return savedCart ? JSON.parse(savedCart) : [];
-});
+    if (!cartKey) return [];
+    const savedCart = localStorage.getItem(cartKey);
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
-useEffect(() => {
-  localStorage.setItem("cart", JSON.stringify(cart));
-}, [cart]);
+  /* ======================
+     SAVE CART (PER USER)
+  ====================== */
+  useEffect(() => {
+    if (!cartKey) return;
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+  }, [cart, cartKey]);
 
-
-  // ✅ Add item to cart with restaurantId
+  /* ======================
+     ADD TO CART
+  ====================== */
   const addToCart = (item, restaurantId) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(
@@ -76,20 +118,20 @@ useEffect(() => {
     });
   };
 
-  // ✅ Remove one occurrence of item
+  /* ======================
+     REMOVE FROM CART
+  ====================== */
   const removeFromCart = (item) => {
-    setCart(prevCart => {
-      return prevCart.reduce((acc, cartItem) => {
+    setCart(prevCart =>
+      prevCart.reduce((acc, cartItem) => {
         if (cartItem._id === item._id && cartItem.type === item.type) {
-          if (cartItem.qty > 1) {
-            acc.push({ ...cartItem, qty: cartItem.qty - 1 });
-          }
+          if (cartItem.qty > 1) acc.push({ ...cartItem, qty: cartItem.qty - 1 });
         } else {
           acc.push(cartItem);
         }
         return acc;
-      }, []);
-    });
+      }, [])
+    );
   };
 
   return (
