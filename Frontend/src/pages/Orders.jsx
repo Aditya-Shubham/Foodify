@@ -2,6 +2,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import TopBar from "./TopBar";
 
+
+const formatTimeToAMPM = (time) => {
+  if (!time) return "";
+
+  const [hour, minute] = time.split(":").map(Number);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+
+  return `${displayHour}:${minute.toString().padStart(2, "0")} ${ampm}`;
+};
+
 /* -------------------- CARDS -------------------- */
 
 const RestaurantCard = ({ restaurant, onSelect }) => (
@@ -14,7 +25,14 @@ const RestaurantCard = ({ restaurant, onSelect }) => (
       />
     )}
     <h3>{restaurant.name}</h3>
-    <p>{restaurant.cuisine}</p>
+    <p style={{ fontSize: "14px", fontWeight: 500, marginBottom: "4px" }}>
+  {restaurant.cuisine}
+</p>
+
+<p style={{ fontSize: "13px", opacity: 0.8 }}>
+  ⏱ {formatTimeToAMPM(restaurant.openTime)} – {formatTimeToAMPM(restaurant.closeTime)}
+</p>
+
   </div>
 );
 
