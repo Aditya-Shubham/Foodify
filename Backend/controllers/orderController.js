@@ -146,7 +146,7 @@ export const getDeliveryPartnerOrders = async (req, res) => {
     }
 
     const orders = await Order.find({ deliveryPartner: partner._id })
-      .populate("restaurant", "name")
+      .populate("restaurant", "name address")
       .populate("user", "name email phone addresses"); // ✅ phone added
 
     const formattedOrders = orders.map(order => {

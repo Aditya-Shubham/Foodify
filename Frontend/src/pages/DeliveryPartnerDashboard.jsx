@@ -49,6 +49,12 @@ const DeliveryDashboard = () => {
           </p>
 
           <p>
+            <span className="label">Restaurant Address: </span>
+            <span className="value">{order.restaurant?.address || "Address not available"}
+            </span>
+          </p>
+
+          <p>
             <span className="label">Customer: </span>
             <span className="value">{order.user?.name}</span>
           </p>
