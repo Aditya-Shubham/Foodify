@@ -172,6 +172,7 @@ restaurant.menu.forEach(item => {
               <option value="Grill,BBQ">Grill,BBQ</option>
               <option value="Bakery">Bakery</option>
               <option value="Desserts">Desserts</option>
+              <option value="Continental">Continental</option>
             </select>
           </div>
 
