@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const DeliveryDashboard = () => {
+  const navigate = useNavigate();
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  navigate("/login");
+};
   const [orders, setOrders] = useState([]);
   const token = localStorage.getItem("token");
 
@@ -35,7 +43,13 @@ const DeliveryDashboard = () => {
 
   return (
     <div className="deliverypartner-dashboard">
-      <h2 className="dashboard-title">My Delivery Orders</h2>
+      <div className="dashboard-header">
+  <h2 className="dashboard-title">My Delivery Orders</h2>
+
+  <button className="back-btn1" onClick={handleLogout}>
+    Logout
+  </button>
+</div>
 
       {orders.length === 0 && (
         <p className="no-orders">No orders assigned</p>

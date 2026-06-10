@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const RestaurantOwnerDashboard = () => {
+  const navigate = useNavigate();
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+  navigate("/login");
+};
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +66,13 @@ const RestaurantOwnerDashboard = () => {
 
   return (
     <div className="owner-dashboard">
-      <h2 className="dashboard-title">Restaurant Owner Dashboard</h2>
+      <div className="dashboard-header">
+  <h2 className="dashboard-title">Restaurant Owner Dashboard</h2>
+
+  <button className="back-btn1" onClick={handleLogout}>
+    Logout
+  </button>
+</div>
 
       {orders.length === 0 ? (
         <p className="no-orders">No orders yet</p>

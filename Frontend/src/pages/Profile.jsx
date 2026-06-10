@@ -76,6 +76,13 @@ const OrderHistory = () => {
 const Profile = () => {
   const navigate = useNavigate();
 
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
+
+  navigate("/login");
+};
+
   // User profile state
   const [profile, setProfile] = useState({
     name: "",
@@ -222,6 +229,9 @@ const Profile = () => {
           ← Back
         </button>
         <h1>My Profile</h1>
+         <button className="back-btn1" onClick={handleLogout}>
+    Logout
+  </button>
       </div>
 
       {/* Profile Information Section */}
