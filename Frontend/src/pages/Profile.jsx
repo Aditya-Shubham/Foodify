@@ -80,7 +80,7 @@ const handleLogout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
 
-  navigate("/login");
+ window.location.href = "/login"; // Redirect to login page
 };
 
   // User profile state
