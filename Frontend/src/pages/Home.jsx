@@ -1,12 +1,32 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getRecommendations } from "../services/recommendationService";
 
 const Home = () => {
   const navigate = useNavigate();
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddressDropdown, setShowAddressDropdown] = useState(false);
+const [recommendationData, setRecommendationData] = useState(null);
+const [showAll, setShowAll] = useState(false);
+
+const visibleRecommendations = showAll
+  ? (recommendationData?.recommendations || [])
+  : (recommendationData?.recommendations || []).slice(0, 6);
+
+useEffect(() => {
+  const fetchRecommendations = async () => {
+    try {
+      const data = await getRecommendations();
+      setRecommendationData(data);
+    } catch (error) {
+      console.error("Recommendation Error:", error);
+    }
+  };
+
+  fetchRecommendations();
+}, []);
 
   // Load addresses from localStorage on component mount
   useEffect(() => {
@@ -33,6 +53,14 @@ const Home = () => {
     setShowAddressDropdown(false);
     localStorage.setItem("selectedAddress", JSON.stringify(address));
   };
+
+// Best recommendation (Hero Card)
+const bestRecommendation =
+  recommendationData?.recommendations?.[0];
+
+// Remaining recommendations
+const otherRecommendations =
+  recommendationData?.recommendations?.slice(1) || [];
 
   return (
     <div className="page home">
@@ -134,6 +162,98 @@ const Home = () => {
           Explore Menu 🍽️
         </button>
       </section>
+
+{/* AI RECOMMENDATION SECTION */}
+{bestRecommendation && (
+  <section className="recommendation-section">
+
+    <div className="recommendation-header">
+
+      <div>
+        <h2>{recommendationData.greeting}</h2>
+
+        <p>
+          Perfect {recommendationData.meal.toLowerCase()} picks for this{" "}
+          {recommendationData.season.toLowerCase()}.
+        </p>
+      </div>
+
+      <span className="ai-badge">
+        🤖 Foodify AI
+      </span>
+
+    </div>
+
+    {/* HERO CARD */}
+
+    <div className="hero-recommendation">
+
+      <img
+        src={`http://localhost:5000/uploads/menu/${bestRecommendation.image}`}
+        alt={bestRecommendation.foodName}
+      />
+
+      <div className="hero-content">
+
+        <span className="match-badge">
+          🔥 {bestRecommendation.score}% Match
+        </span>
+
+        <h2>{bestRecommendation.foodName}</h2>
+
+        <p className="restaurant-name">
+          {bestRecommendation.restaurantName}
+        </p>
+
+        <div className="hero-footer">
+
+          <span className="price">
+            ₹{bestRecommendation.price}
+          </span>
+
+          <button
+            className="order-btn"
+            onClick={() => navigate("/orders")}
+          >
+            Order Now →
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    {/* MORE RECOMMENDATIONS */}
+
+    {otherRecommendations.length > 0 && (
+      <>
+        <h3 className="more-title">
+          More Recommendations
+        </h3>
+
+        <div className="recommendation-grid">
+  {visibleRecommendations.map((item) => (
+    <div className="recommendation-card" key={item._id}>
+     <img
+  src={`http://localhost:5000/uploads/menu/${item.image}`}
+  alt={item.foodName}
+/>
+      <div className="recommendation-info">
+       <h3>{item.foodName}</h3>
+<p>{item.restaurantName}</p>
+<h4>₹{item.price}</h4>
+      </div>
+    </div>
+  ))}
+</div>
+
+      </>
+    )}
+
+  </section>
+)}
+
 
       {/* TRUST SIGNALS */}
       <section className="trust-strip">

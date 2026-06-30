@@ -9,6 +9,30 @@ const menuItemSchema = new mongoose.Schema({
     required: true,
   },
   image: { type: String, required: true },
+    category: {
+      type: String,
+    enum: [
+      "BREAKFAST",
+      "MAIN_COURSE",
+      "SNACKS",
+      "FAST_FOOD",
+      "BEVERAGE",
+      "DESSERT"
+    ],
+     default: "MAIN_COURSE",
+  },
+
+  // NEW
+  suitableTime: {
+    type: [String],
+    default: [],
+  },
+
+  // NEW
+  suitableSeason: {
+    type: [String],
+    default: [],
+  }
 });
 
 const restaurantSchema = new mongoose.Schema(

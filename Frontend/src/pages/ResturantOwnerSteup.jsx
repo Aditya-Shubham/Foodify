@@ -11,8 +11,18 @@ const RestaurantOwnerSetup = () => {
     openTime: "",
     closeTime: "",
     image: null,
-    menu: [{ name: "", price: "", type: "VEG", image: null }],
+   menu: [
+  {
+    name: "",
+    price: "",
+    type: "VEG",
+    image: null,
 
+    category: "MAIN_COURSE",
+    suitableTime: [],
+    suitableSeason: [],
+  },
+],
   });
 
   const handleChange = (e, index = null) => {
@@ -33,7 +43,17 @@ const RestaurantOwnerSetup = () => {
   // Menu text fields
   else if (index !== null) {
     const newMenu = [...restaurant.menu];
-    newMenu[index][name] = value;
+    if (name === "suitableTime" || name === "suitableSeason") {
+  const values = newMenu[index][name];
+
+  if (e.target.checked) {
+    newMenu[index][name] = [...values, value];
+  } else {
+    newMenu[index][name] = values.filter((v) => v !== value);
+  }
+} else {
+  newMenu[index][name] = value;
+}
     setRestaurant({ ...restaurant, menu: newMenu });
   }
 
@@ -46,7 +66,19 @@ const RestaurantOwnerSetup = () => {
   const addMenuItem = () => {
     setRestaurant({
       ...restaurant,
-     menu: [...restaurant.menu, { name: "", price: "", type: "VEG", image: null }],
+     menu: [
+  ...restaurant.menu,
+  {
+    name: "",
+    price: "",
+    type: "VEG",
+    image: null,
+
+    category: "MAIN_COURSE",
+    suitableTime: [],
+    suitableSeason: [],
+  },
+],
     });
   };
 
@@ -86,9 +118,12 @@ const RestaurantOwnerSetup = () => {
 const menuForBackend = restaurant.menu.map(item => ({
   name: item.name,
   price: item.price,
-  type: item.type, // ✅ REQUIRED
-}));
+  type: item.type,
 
+  category: item.category,
+  suitableTime: item.suitableTime,
+  suitableSeason: item.suitableSeason,
+}));
 formData.append("menu", JSON.stringify(menuForBackend));
 
 // menu images
@@ -120,15 +155,14 @@ restaurant.menu.forEach(item => {
   };
 
   return (
-    <div className="profile-page">
-      <div className="profile-header">
+   <div className="owner-page">
+      <div className="owner-header">
         <h1>Register Your Restaurant 🍴</h1>
       </div>
-
-      <div className="profile-section">
+<div className="owner-section">
         <p>Fill in the details to get your restaurant live on Foodify.</p>
 
-        <form className="profile-form" onSubmit={handleSubmit}>
+        <form className="owner-form" onSubmit={handleSubmit}>
           {/* BASIC INFO */}
           <h2>Basic Info</h2>
 
@@ -219,7 +253,7 @@ restaurant.menu.forEach(item => {
           <h2>Menu Items</h2>
 
           {restaurant.menu.map((item, index) => (
-            <div key={index} className="profile-section">
+            <div key={index} className="menu-item">
               <div className="form-row">
                 <div className="form-group">
                   <label>Item Name</label>
@@ -257,7 +291,74 @@ restaurant.menu.forEach(item => {
                 </select>
                 </div>
 
+                <div className="form-group">
+                  <label>Food Category</label>
 
+                    <select
+                     name="category"
+                       value={item.category}
+                       onChange={(e) => handleChange(e, index)}
+                         >
+                         <option value="BREAKFAST">Breakfast</option>
+                          <option value="MAIN_COURSE">Main Course</option>
+                           <option value="SNACKS">Snacks</option>
+                           <option value="FAST_FOOD">Fast Food</option>
+                         <option value="BEVERAGE">Beverage</option>
+                         <option value="DESSERT">Dessert</option>
+                          </select>
+                            </div>
+                     
+                     <div className="form-group">
+  <label>Suitable Time</label>
+
+  <div className="checkbox-group">
+
+    {["Breakfast","Lunch","Snacks","Dinner"].map((time) => (
+
+      <label key={time}>
+
+        <input
+          type="checkbox"
+          name="suitableTime"
+          value={time}
+          checked={item.suitableTime.includes(time)}
+          onChange={(e) => handleChange(e, index)}
+        />
+
+        {time}
+
+      </label>
+
+    ))}
+
+  </div>
+</div>
+
+<div className="form-group">
+  <label>Suitable Season</label>
+
+  <div className="checkbox-group">
+
+    {["Summer","Monsoon","Autumn","Winter"].map((season) => (
+
+      <label key={season}>
+
+        <input
+          type="checkbox"
+          name="suitableSeason"
+          value={season}
+          checked={item.suitableSeason.includes(season)}
+          onChange={(e) => handleChange(e, index)}
+        />
+
+        {season}
+
+      </label>
+
+    ))}
+
+  </div>
+</div>
                  
               <div className="form-group">
                 <label>Item Image</label>
@@ -272,7 +373,7 @@ restaurant.menu.forEach(item => {
               {restaurant.menu.length > 1 && (
                 <button
                   type="button"
-                  className="btn-cancel"
+                  className="btn-remove"
                   onClick={() => removeMenuItem(index)}
                 >
                   Remove Item
@@ -281,7 +382,7 @@ restaurant.menu.forEach(item => {
             </div>
           ))}
 
-          <button type="button" className="btn-add-address" onClick={addMenuItem}>
+          <button type="button" className="btn-add-menu" onClick={addMenuItem}>
             + Add Menu Item
           </button>
 

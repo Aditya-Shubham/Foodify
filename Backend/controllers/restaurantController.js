@@ -17,10 +17,19 @@ export const createRestaurant = async (req, res) => {
     if (menu) {
       const parsedMenu = typeof menu === "string" ? JSON.parse(menu) : menu;
 
-      menuWithImages = parsedMenu.map((item, index) => ({
-        ...item,
-        image: menuImages[index]?.filename || null,
-      }));
+     menuWithImages = parsedMenu.map((item, index) => ({
+  name: item.name,
+  price: item.price,
+  type: item.type,
+
+  category: item.category || "MAIN_COURSE",
+
+  suitableTime: item.suitableTime || [],
+
+  suitableSeason: item.suitableSeason || [],
+
+  image: menuImages[index]?.filename || null,
+}));
     }
 
     const restaurant = await Restaurant.create({
