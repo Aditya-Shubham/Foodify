@@ -11,10 +11,6 @@ const Home = () => {
 const [recommendationData, setRecommendationData] = useState(null);
 const [showAll, setShowAll] = useState(false);
 
-const visibleRecommendations = showAll
-  ? (recommendationData?.recommendations || [])
-  : (recommendationData?.recommendations || []).slice(0, 6);
-
 useEffect(() => {
   const fetchRecommendations = async () => {
     try {
@@ -61,6 +57,10 @@ const bestRecommendation =
 // Remaining recommendations
 const otherRecommendations =
   recommendationData?.recommendations?.slice(1) || [];
+
+const visibleRecommendations = showAll
+  ? otherRecommendations
+  : otherRecommendations.slice(0, 6);
 
   return (
     <div className="page home">
@@ -195,11 +195,7 @@ const otherRecommendations =
 
       <div className="hero-content">
 
-        <span className="match-badge">
-          🔥 {bestRecommendation.score}% Match
-        </span>
-
-        <h2>{bestRecommendation.foodName}</h2>
+               <h2>{bestRecommendation.foodName}</h2>
 
         <p className="restaurant-name">
           {bestRecommendation.restaurantName}
@@ -215,7 +211,7 @@ const otherRecommendations =
             className="order-btn"
             onClick={() => navigate("/orders")}
           >
-            Order Now →
+            Order Now 
           </button>
 
         </div>
@@ -243,6 +239,12 @@ const otherRecommendations =
        <h3>{item.foodName}</h3>
 <p>{item.restaurantName}</p>
 <h4>₹{item.price}</h4>
+<button
+            className="order-btn"
+            onClick={() => navigate("/orders")}
+          >
+            Order Now 
+          </button>
       </div>
     </div>
   ))}
